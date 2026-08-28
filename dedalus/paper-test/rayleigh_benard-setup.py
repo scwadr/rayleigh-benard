@@ -152,4 +152,8 @@ except:
     raise
 finally:
     solver.log_stats()
-    solver.evaluator.evaluate_handlers([checkpoints], sim_time=solver.sim_time)
+    solver.evaluator.evaluate_handlers(
+        [checkpoints],
+        sim_time=solver.sim_time,
+        iteration=solver.iteration,
+    )

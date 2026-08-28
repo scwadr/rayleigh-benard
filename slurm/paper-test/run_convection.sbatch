@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 #SBATCH --job-name=rb_convection       # A name for your job
 #SBATCH --account=gts-rg119            # Your charge account
 #SBATCH --qos=embers                   # The 'embers' QOS queue
@@ -24,12 +26,15 @@ done
 [[ -d "$REPO_ROOT/dedalus" ]] || { echo "Could not locate repository root" >&2; exit 1; }
 cd "$REPO_ROOT" || exit 1
 
-# 3. Run the Python scripts sequentially
+# 3. Run the Python scripts sequentially. `set -e` stops the job immediately
+# if any phase fails, so later phases cannot consume incomplete checkpoint data.
 echo "Starting Phase 1: Condition Setup (2048x768)..."
-mpiexec -n 64 python3 dedalus/paper-test/rayleigh_benard-setup.py && \
-echo "Phase 1 complete. Starting Phase 2: Stabilization (4096x1536)..." && \
-mpiexec -n 64 python3 dedalus/paper-test/rayleigh_benard-stabilize.py && \
-echo "Phase 2 complete. Starting Phase 3: High-Res Production..." && \
+mpiexec -n 64 python3 dedalus/paper-test/rayleigh_benard-setup.py
+
+echo "Phase 1 complete. Starting Phase 2: Stabilization (4096x1536)..."
+mpiexec -n 64 python3 dedalus/paper-test/rayleigh_benard-stabilize.py
+
+echo "Phase 2 complete. Starting Phase 3: High-Res Production..."
 mpiexec -n 64 python3 dedalus/paper-test/rayleigh_benard.py
 
 echo "Full 3-stage DNS pipeline complete."
