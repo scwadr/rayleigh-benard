@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Slurm creates these at runtime. Existing logs remain tracked as examples/history.
+slurm/logs/*.out
+

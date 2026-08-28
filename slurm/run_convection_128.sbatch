@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=128
 #SBATCH --time=08:00:00
-#SBATCH --output=%x-%j.out
+#SBATCH --output=slurm/logs/%x-%j.out
 
 # 1. Load Environment
 module load anaconda3
@@ -28,8 +28,8 @@ echo "Job started on $(hostname) at $(date)"
 echo "Running with 128 MPI tasks..."
 
 # 5. Run the Script
-cd $SLURM_SUBMIT_DIR
+cd "$SLURM_SUBMIT_DIR"
 # Adding -u to force print statements to appear immediately in the log
-mpiexec -n 128 python3 -u rayleigh_benard-condition_setup_128.py
+mpiexec -n 128 python3 -u dedalus/rayleigh_benard-condition_setup_128.py
 
 echo "Job finished at $(date)"
