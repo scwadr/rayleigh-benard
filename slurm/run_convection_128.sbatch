@@ -6,7 +6,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=128
 #SBATCH --time=08:00:00
-#SBATCH --output=slurm/logs/%x-%j.out
+#SBATCH --output=%x-%j.out
 
 # 1. Load Environment
 module load anaconda3
@@ -28,7 +28,12 @@ echo "Job started on $(hostname) at $(date)"
 echo "Running with 128 MPI tasks..."
 
 # 5. Run the Script
-cd "$SLURM_SUBMIT_DIR"
+REPO_ROOT="$SLURM_SUBMIT_DIR"
+while [[ "$REPO_ROOT" != / && ! -d "$REPO_ROOT/dedalus" ]]; do
+    REPO_ROOT="$(dirname "$REPO_ROOT")"
+done
+[[ -d "$REPO_ROOT/dedalus" ]] || { echo "Could not locate repository root" >&2; exit 1; }
+cd "$REPO_ROOT" || exit 1
 # Adding -u to force print statements to appear immediately in the log
 mpiexec -n 128 python3 -u dedalus/rayleigh_benard-condition_setup_128.py
 

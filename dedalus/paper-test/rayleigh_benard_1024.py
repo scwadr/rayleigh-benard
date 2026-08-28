@@ -103,7 +103,7 @@ solver = problem.build_solver(timestepper)
 solver.stop_sim_time = stop_sim_time
 
 # Initial conditions
-solver.load_state('/storage/scratch1/2/ashelestov3/check_1024/check_1024_s51.h5')
+solver.load_state('/storage/scratch1/2/ashelestov3/checks_1024/checks_1024_s51.h5')
 
 # Analysis #/storage/scratch1/2/ashelestov3/snaps_2048_1e8
 snapshots = solver.evaluator.add_file_handler('/storage/scratch1/2/ashelestov3/snaps_t', iter = 10, max_writes=2e9)

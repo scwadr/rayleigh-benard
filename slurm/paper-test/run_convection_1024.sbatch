@@ -6,7 +6,7 @@
 #SBATCH --nodes=1                      # Request 1 node
 #SBATCH --ntasks-per-node=128          # Request all 128 cores on the node
 #SBATCH --time=08:00:00                # Set 8 hour time limit
-#SBATCH --output=slurm/logs/%x-%j-128.out  # Keep Slurm output under slurm/logs
+#SBATCH --output=%x-%j-128.out
 
 # 1. Load your modules
 module load anaconda3
@@ -15,9 +15,14 @@ module load anaconda3
 # uncomment the line below and add your environment name:
 source activate dedalus3
 
-# 2. Ensure we are in the correct directory
-# (SLURM_SUBMIT_DIR points to where you ran the sbatch command)
-cd "$SLURM_SUBMIT_DIR"
+# 2. Run from the repository root, regardless of which repository
+# subdirectory the job was submitted from.
+REPO_ROOT="$SLURM_SUBMIT_DIR"
+while [[ "$REPO_ROOT" != / && ! -d "$REPO_ROOT/dedalus" ]]; do
+    REPO_ROOT="$(dirname "$REPO_ROOT")"
+done
+[[ -d "$REPO_ROOT/dedalus" ]] || { echo "Could not locate repository root" >&2; exit 1; }
+cd "$REPO_ROOT" || exit 1
 
 # 3. Run the Python scripts sequentially
 # You requested 128 cores above, but are using 64 here. This is fine, 
