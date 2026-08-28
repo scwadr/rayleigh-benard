@@ -6,13 +6,19 @@
 
 # TODO
 
-- None.
+- Cleanup remaining filtered-equation issues:
+  - Restore full `tau` plus ordinary filtered pressure.
+  - Fix `dt` using `np.diff(t)` and remove the obsolete `*10` time-scale factor.
+  - Fix filter-support trimming and use periodic filtering along `x`.
+  - Omit `w` during equation recovery.
+  - Remove zero and duplicate library columns numerically after constructing `Q`.
+  - Directly evaluate the known momentum combination before regression.
 
 # FILTERED RAYLEIGH-BENARD ROOT-CAUSE ANALYSIS (2026-08-28)
 
 The momentum equation is recoverable, and the SPIDER library contains every required term. The root cause is a combination of inconsistent field conventions and regression conditioning—not a missing momentum term.
 
-## Primary root cause: buoyancy points in the wrong direction
+## Resolved primary root cause: buoyancy pointed in the wrong direction
 
 The component flow is:
 
@@ -23,7 +29,7 @@ The component flow is:
 | Filter notebook reload | `U = u_x` | `V = u_z` |
 | `u_bar` | `u_x` | `u_z` |
 
-The double swap is confusing but ultimately correct. However, the unit vector in `COnvection-FILTER-Copy2.ipynb` is:
+The double swap is confusing but ultimately correct. However, the unit vector in `COnvection-FILTER-Copy2.ipynb` was initially:
 
 ```python
 [1, 0]
@@ -38,7 +44,17 @@ unit_vect = np.stack(
 )
 ```
 
-Currently SPIDER is asked to fit buoyancy forcing in the horizontal momentum equation while omitting it from the vertical equation. No single equivariant rank-1 momentum relation can correct that mistake.
+SPIDER was therefore asked to fit buoyancy forcing in the horizontal momentum equation while omitting it from the vertical equation. No single equivariant rank-1 momentum relation could correct that mistake. This was corrected on the feature branch and the filtered momentum equation is now recovered.
+
+The successful recovered relation is, up to small regression artifacts:
+
+```text
+partial_beta tau_alpha_beta - b zbar_alpha + partial_alpha p
++ u_beta partial_beta u_alpha - 1e-4 partial_beta^2 u_alpha
++ partial_t u_alpha = 0.
+```
+
+The recovered coefficients were approximately `1`, `-1`, `1`, `1`, `-1e-4`, and `0.99`, respectively. A small additional term, `-8.67e-06 partial_t partial_alpha p`, was also selected and should be evaluated by contribution magnitude during cleanup.
 
 This did not affect the principal setup in `COnvection-Stable.ipynb`, because that cell only includes `u` and `b` as observables; `z̄` is excluded.
 
@@ -181,13 +197,13 @@ Interpolation is likely a secondary contributor, not the primary cause. Recoveri
 
 ## Recommended correction order
 
-1. Change `unit_vect` to `[0, 1]`.
-2. Return to full `tau` plus ordinary `p_filt`.
-3. Fix `dt` using `np.diff(t)` and remove the `*10` time-scale factor.
-4. Fix the support trimming and use periodic filtering along `x`.
-5. Omit `w` during equation recovery.
-6. Remove zero and duplicate library columns numerically after constructing `Q`.
-7. Directly evaluate the known momentum combination before regression:
+1. [completed] Change `unit_vect` to `[0, 1]`.
+2. [cleanup TODO] Return to full `tau` plus ordinary `p_filt`.
+3. [cleanup TODO] Fix `dt` using `np.diff(t)` and remove the `*10` time-scale factor.
+4. [cleanup TODO] Fix the support trimming and use periodic filtering along `x`.
+5. [cleanup TODO] Omit `w` during equation recovery.
+6. [cleanup TODO] Remove zero and duplicate library columns numerically after constructing `Q`.
+7. [cleanup TODO] Directly evaluate the known momentum combination before regression:
 
 ```text
 Q_partial_t_u + Q_u_dot_grad_u + Q_grad_p - 1e-4 Q_laplacian_u
