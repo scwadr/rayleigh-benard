@@ -1,47 +1,35 @@
-# Rayleigh-Bénard / SPIDER experiments
+# Rayleigh-Benard / SPIDER experiments
 
 The notebooks in the repository root contain the main analysis workflow.
 
 ## Repository layout
 
-- `SPIDER/` — local SPIDER library checkout (`commons`, `continuous`, and `db`)
-- `dedalus/` — Dedalus simulations and Dedalus-based plotting scripts
-- `slurm/` — batch scripts; generated and historical job output is under `slurm/logs/`
-- `paper-test/` variants have been grouped under the corresponding `dedalus/` and `slurm/` directories
+- `SPIDER/` - vendored contents of `src/PySPIDER` from the upstream PySPIDER repository
+- `dedalus/` - Dedalus simulations and Dedalus-based plotting scripts
+- `slurm/` - batch scripts and historical job output
+- `paper-test/` variants are grouped under the corresponding `dedalus/` and `slurm/` directories
 
 ## Running Slurm jobs
 
-Submit jobs from the repository root, for example:
+Jobs can be submitted from the repository root or any subdirectory within it, for example:
 
 ```bash
 sbatch slurm/run_convection.sbatch
 ```
 
-The batch scripts write output to `slurm/logs/` and invoke scripts from `dedalus/`.
+The batch scripts locate the repository root before invoking scripts from `dedalus/`.
+Slurm writes each new job log to the directory from which the job is submitted.
 
-## Connecting SPIDER to its own repository
+## Updating SPIDER
 
-`SPIDER/` is arranged at one directory boundary so it can become a Git submodule.
-Once these files exist in the SPIDER repository, replace this tracked directory with
-the submodule (substitute the actual URL):
+`SPIDER/` contains only the contents of `src/PySPIDER` from
+<https://github.com/sibirica/PySPIDER>. To replace it with the latest version from
+the upstream `main` branch, run:
 
-```bash
-git rm -r SPIDER
-git submodule add <SPIDER-GITHUB-URL> SPIDER
-git commit -m "Track SPIDER as a submodule"
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-pyspider.ps1
 ```
 
-After cloning this project, initialize it with:
-
-```bash
-git clone --recurse-submodules <THIS-REPOSITORY-URL>
-```
-
-To update SPIDER to the latest commit on its configured branch:
-
-```bash
-git submodule update --remote SPIDER
-```
-
-The parent repository records an exact SPIDER commit, so commit the updated
-submodule pointer when you want collaborators to receive that version.
+Review and commit the resulting changes so this repository continues to record an
+exact PySPIDER snapshot. The synced upstream commit is recorded in
+`.pyspider-revision`.

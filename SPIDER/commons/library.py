@@ -1,19 +1,21 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace, KW_ONLY
-from typing import List, Dict, Union, Tuple, Iterable, Generator
-from itertools import permutations
-from functools import cached_property#, lru_cache#, reduce 
-from operator import add
+from dataclasses import dataclass, replace, KW_ONLY #, field
+from typing import Union, Iterable, Generator, Callable, Optional # List, Dict, Tuple
+from functools import cached_property #, lru_cache, reduce 
+#from operator import add
 from collections import defaultdict, Counter
 
 import re
 import unicodedata
 
-import numpy as np
 from numpy import prod
 
-from commons.z3base import *
+from .z3base import (
+    lowercase_greek_letters,
+    IndexHole, VarIndex, LiteralIndex, Index, EinSumExpr, SymmetryRep,
+    index_rank, highest_index, generate_indexings
+)
 
 # list of substitutions to go between plaintext and LaTeX output
 latex_replacements = {'·': '\\cdot', '²': '^2', '³': '^3', '⁴': '^4', '⁵': '^5', '⁶': '^6',
@@ -29,40 +31,32 @@ def wrap_subscripts(string):
     return re.sub(r'_([A-z0-9\\]*)', r'_{\1}', string)
 
 def latexify(string):
-    return re.sub(r'\\partial', r'\\partial_', wrap_subscripts(multiple_replace(string, latex_replacements)))
+    step1 = re.sub(r'\\partial', r'\\partial_', wrap_subscripts(multiple_replace(string, latex_replacements)))
+    return re.sub(r']}', r'}]', step1)
 
 # increment all VarIndices in an expression
 def inc_inds(expr: EinSumExpr[VarIndex | LiteralIndex], shift=1):
     return expr.map_all_indices(lambda ind: replace(ind, value=ind.value + shift) if isinstance(ind, VarIndex) else ind)
-
-# get rank of an Einstein expression by looking at its VarIndices/IndexHoles (for LiteralIndex, return 0)
-def index_rank(indices: Iterable[VarIndex | IndexHole]):
-    index_counter = Counter(indices)
-    num_singles = len([count for index, count in index_counter.items() if count==1 and isinstance(index, VarIndex)])
-    num_holes = index_counter[IndexHole()]
-    return num_singles+num_holes
-
-# get highest index in list of indices
-def highest_index(indices: Iterable[VarIndex]):
-    # IndexHoles always count as the default of -1
-    return max((-1 if isinstance(index, IndexHole) else index.value) for index in indices) if indices else -1
 
 def canonicalize(expr: EinSumExpr[Index] | Equation):
     if isinstance(expr, Equation):
         return expr.canonicalize()
     if not expr.all_indices() or isinstance(expr.all_indices()[0], LiteralIndex):
         return expr.eq_canon()[0]
-    indexings = generate_indexings(expr)
+    #expr = secv_canon(expr)
+    indexings = generate_indexings(expr, autocorrect=True) # correctly commute things when reindexing
     try:
         canon = next(indexings)
     except StopIteration:
         assert False, f"Didn't find any indexings for {expr} with rank {expr.rank} :("
     try:
         canon2 = next(indexings)
-        assert False, f"Found multiple canonical indexings for {expr} with rank {expr.rank}: {canon} and {canon2}"
+        assert False, (f"Found multiple canonical indexings for {expr} with rank "
+                       f"{expr.rank}: {canon} and {canon2}")
     except StopIteration:
         pass
-    return canon.eq_canon()[0] # canonicalize structure too
+    return canon
+    #return canon.eq_canon()[0] # canonicalize structure too
 
 def dt_fun(expr: EinSumExpr[VarIndex]):
     if isinstance(expr, ConstantTerm):
@@ -129,7 +123,9 @@ def contract(expr: EinSumExpr[VarIndex] | Equation[VarIndex], i: int, j: int):
             return Equation(terms=[contract(t, i, j) for t in ts], coeffs=c)
         case EinSumExpr():
             n_singles = index_rank(expr.all_indices()) 
-            assert i<n_singles and j<n_singles, "Can only contract single indices"
+            assert i<n_singles and j<n_singles, (
+                f"Can only contract single indices, not ({i}, {j}) in {expr}"
+            )
             new_n_singles = n_singles - 2
             new_double = new_n_singles
             if j<i:
@@ -199,7 +195,7 @@ def ES_sum(*equations: LibraryTerm | Equation):
     return Equation(terms=terms, coeffs=coeffs)
 
 # create a copy of the prime with a new set of derivative orders
-def set_order_counts(p: Prime, counts: Counter[int]) -> Prime:
+def set_order_counts(p: LibraryPrime, counts: Counter[int]) -> LibraryPrime:
     torder = counts['t']
     ct_copy = counts.copy()
     ct_copy['t'] = 0
@@ -321,7 +317,7 @@ class Observable[T](EinSumExpr):
     _: KW_ONLY
     string: str  # String representing the Observable.
     rank: Union[int, SymmetryRep]
-    indices: Tuple[T, ...] = None
+    indices: tuple[T, ...] = None
     can_commute_indices: bool = False # set to true for symmetric or antisymmetric
     antisymmetric: bool = False
 
@@ -333,13 +329,16 @@ class Observable[T](EinSumExpr):
 
     def __lt__(self, other):
         if not isinstance(other, Observable):
-            raise TypeError(f"Operation not supported between instances of '{type(self)}' and '{type(other)}'")
+            raise TypeError(
+                f"Operation not supported between instances of '{type(self)}' and '{type(other)}'"
+            )
         return self.string < other.string if self.string != other.string \
             else tuple(self.all_indices()) < tuple(other.all_indices())
 
     def __repr__(self):
         index_string = ''.join([repr(idx) for idx in self.all_indices()])
-        return f"{self.string}" if index_string == "" else f"{self.string}_{index_string}"
+        return (f"{self.string}" if index_string == "" 
+                else f"{self.string}_{index_string}")
 
     def sub_exprs(self) -> Iterable[T]:
         return []
@@ -417,7 +416,9 @@ class LibraryPrime[T, Derivand](EinSumExpr):
 
     def __lt__(self, other):
         if not isinstance(other, LibraryPrime):
-            raise TypeError(f"Operation not supported between instances of '{type(self)}' and '{type(other)}'")
+            raise TypeError(
+                f"Operation not supported between instances of '{type(self)}' and '{type(other)}'"
+            )
         
         # continuous case
         if hasattr(self.derivand, 'string') and self.derivand.string != other.derivand.string:
@@ -515,7 +516,7 @@ class LibraryTerm[T, Derivand](EinSumExpr):
         return sum((prime.complexity) for prime in self.primes)
 
     #@lru_cache
-    def symmetry(self, free_ind1=0, free_ind2=1) -> Optional[Int]:
+    def symmetry(self, free_ind1=0, free_ind2=1) -> Optional[int]:
         def transpose(ind):
             if ind.value == free_ind1:
                 return VarIndex(free_ind2)
@@ -537,7 +538,9 @@ class LibraryTerm[T, Derivand](EinSumExpr):
 
     # def __lt__(self, other):
     #     if not isinstance(other, Observable):
-    #         raise TypeError(f"Operation not supported between instances of '{type(self)}' and '{type(other)}'")
+    #         raise TypeError(
+    #             f"Operation not supported between instances of '{type(self)}' and '{type(other)}'"
+    #         )
     #     return self. < other.string if self.string != other.string \
     #         else tuple(self.all_indices()) < tuple(other.all_indices())
 
@@ -654,8 +657,23 @@ class Equation[T, Derivand]:  # can represent equation (expression = 0) OR expre
             #print('indices', term.all_indices(), 'srcs', [idx.src for idx in term.all_indices()])
         # canonicalize terms, removing those with 0 coefficient
         # MIGHT BE EQ_CANON?
-        coeffs = {canonicalize(term): coeff
-                  for term, coeff in coeffs.items() if coeff != 0}
+        
+        # def crashless_canonicalize(term):
+        #     try:
+        #         canon = canonicalize(term)
+        #     except AssertionError as ae:
+        #         print(f"Canonicalization of {term} failed. Reason:")
+        #         print(ae)
+        #         return term
+        #coeffs = {crashless_canonicalize(term): coeff
+        #          for term, coeff in coeffs.items() if coeff != 0}
+        
+        def eq_canonicalize(coeffs):
+            for term, coeff in coeffs.items():
+                if coeff != 0:
+                    term, sign = term.eq_canon()
+                    yield term, sign*coeff
+        coeffs = {canonicalize(term): coeff for term, coeff in eq_canonicalize(coeffs)}    
 
         if not coeffs:
             self.terms, self.coeffs = (), ()
@@ -667,7 +685,7 @@ class Equation[T, Derivand]:  # can represent equation (expression = 0) OR expre
         # e.g. dx(a_\alpha * b) = d\alpha a_\beta * b + a_\beta * d\alpha b
         first : LibraryTerm = min(coeffs.keys())
         indices = list(first.all_indices())
-        has_omega = any(idx.src.value < 0 for idx in indices)
+        has_omega = any((idx.src is not None and idx.src.value < 0) for idx in indices)
         #print(indices, "has omega?", has_omega)
         
         key_map = {idx.src : idx for idx in indices
@@ -711,9 +729,10 @@ class Equation[T, Derivand]:  # can represent equation (expression = 0) OR expre
         new_coeffs = self.coeffs[:lhs_ind] + self.coeffs[lhs_ind + 1:]
         new_coeffs = [-c / self.coeffs[lhs_ind] for c in new_coeffs]
         rhs = Equation(new_terms, new_coeffs)
+        #print("LHS", lhs, "->", canonicalize(lhs))
         if return_normalization:
-            return lhs, rhs, self.coeffs[lhs_ind]
-        return lhs, rhs
+            return canonicalize(lhs), rhs, self.coeffs[lhs_ind]
+        return canonicalize(lhs), rhs
 
     def to_term(self):
         if len(self.terms) != 1:
@@ -721,7 +740,7 @@ class Equation[T, Derivand]:  # can represent equation (expression = 0) OR expre
         else:
             return canonicalize(self.terms[0]) # may need structural canonicalization too - check
 
-def partition(n: int, k: int, weights: Optional[Tuple[int, ...]]) -> Generator[Tuple[int, ...], None, None]:
+def partition(n: int, k: int, weights: Optional[tuple[int, ...]]) -> Generator[tuple[int, ...], None, None]:
     """
     Given k bins (represented by a k-tuple), it yields every possible way to distribute x elements among those bins,
     with x ranging from 0 to n. For example partition(n=3, k=2) -> [(0, 0), (0, 1), (0, 2), (0, 3), (1, 0), (1, 1),

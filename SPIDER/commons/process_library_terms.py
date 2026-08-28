@@ -1,13 +1,21 @@
-from typing import Any, Union, Iterable
+from typing import Any, Union, Iterable, Callable
 from warnings import warn
 
 import numpy as np
 from findiff import FinDiff
-from library import *
-from commons.weight import *
-from functools import reduce
-from operator import mul
-from dataclasses import dataclass, replace
+from functools import reduce, cached_property
+#from operator import mul
+from dataclasses import dataclass, replace, field
+from collections import defaultdict
+
+import concurrent.futures
+from itertools import product
+
+from .z3base import (
+    highest_index, Irrep, FullRank, SymmetricTraceFree, Antisymmetric, LiteralIndex
+)
+from .library import LibraryTerm, ConstantTerm, Observable, ES_prod
+from .weight import weight_1d
 
 # if we want to use integration domains with different sizes & spacings, it might be
 # better to store that information within this object as well
@@ -16,7 +24,10 @@ class IntegrationDomain(object):
         # min_corner - min coordinates in each dimension; sim. max_corner
         self.min_corner = min_corner
         self.max_corner = max_corner
-        self.shape = [max_c - min_c + 1 for (min_c, max_c) in zip(self.min_corner, self.max_corner)]
+        self.shape = [
+            max_c - min_c + 1 
+            for (min_c, max_c) in zip(self.min_corner, self.max_corner)
+        ]
         self.times = list(range(min_corner[-1], max_corner[-1] + 1))
 
     def __repr__(self):
@@ -27,23 +38,30 @@ class IntegrationDomain(object):
         return hash(tuple(self.min_corner + self.max_corner))
 
     def distance(self, pt):
-        return max(self.line_dist(coord, i) for i, coord in enumerate(pt)) # L_0 norm distance
-        # return np.linalg.norm([self.line_dist(coord, dim) for i, coord in enumerate(pt)]) # L_2 norm distance
+        # L_0 norm distance
+        return max(self.line_dist(coord, i) for i, coord in enumerate(pt))
+        # return np.linalg.norm([self.line_dist(coord, dim) for i, coord in enumerate(pt)]) 
+        # L_2 norm distance
 
     def line_dist(self, coord, dim):
         return max(0, self.min_corner[dim] - coord, coord - self.max_corner[dim])
+    
+    def __eq__(self, other):
+        if not isinstance(other, IntegrationDomain):
+            return NotImplemented
+        return self.min_corner == other.min_corner and self.max_corner == self.max_corner
 
 @dataclass
 class Weight(object): # scalar-valued Legendre polynomial weight function (may rename class to LegendreWeight)
-    m: List[int]
-    q: List[int]
-    k: List[int]
+    m: list[int]
+    q: list[int]
+    k: list[int]
     dxs: Iterable[float] = None
     n_dimensions: int = None
     n_spatial_dim: int = None
     scale: float = 1
     ready: bool = False
-    weight_objs: List[np.polynomial.Polynomial] = None
+    weight_objs: list[np.polynomial.Polynomial] = None
         
     def __post_init__(self):
         self.n_dimensions = len(self.m)
@@ -80,10 +98,16 @@ class Weight(object): # scalar-valued Legendre polynomial weight function (may r
     __rmul__ = __mul__
 
     def __repr__(self):
-        return f"Weight({self.m}, {self.q}, {self.k}, {self.scale}, {self.dxs})"
+        return (f"Weight(m={self.m}, q={self.q}, k={self.k}, "
+                f"coeff={self.scale}, dxs={self.dxs})")
 
     def __hash__(self):
         return hash(self.__repr__)
+    
+    def __eq__(self, other):
+        if not isinstance(other, Weight):
+            return NotImplemented
+        return (self.m == other.m and self.q == other.q and self.k == other.k and tuple(self.dxs) == tuple(other.dxs) and self.scale == other.scale)
 
 @dataclass
 class GeneralizedWeight(object): # scalar-valued weight function for g(x)*Weight - not currently in use
@@ -91,7 +115,7 @@ class GeneralizedWeight(object): # scalar-valued weight function for g(x)*Weight
     g_fun: Callable[[Iterable[float]], float]
     
     def __repr__(self):
-        return f"GeneralizedWeight({self.base_weight}, {g_fun.__name__})"
+        return f"GeneralizedWeight({self.base_weight}, {self.g_fun.__name__})"
 
 @dataclass(kw_only=True)
 class Metric(object):
@@ -145,6 +169,11 @@ class TensorWeight: # tensor-valued weight function
 
     def __hash__(self):
         return hash(repr(self))
+    
+    def __eq__(self, other):
+        if not isinstance(other, TensorWeight):
+            return NotImplemented
+        return (self.weight_dict == other.weight_dict and self.rank == other.rank and self.n_spatial_dim == other.n_spatial_dim)
 
     __rmul__ = __mul__
 
@@ -172,6 +201,17 @@ class FactoredTensorWeight(TensorWeight):
 
     def __hash__(self):
         return hash(repr(self))
+    
+    def __eq__(self, other):
+        if not isinstance(other, FactoredTensorWeight):
+            return NotImplemented
+        if not super().__eq__(other):
+            return False
+        if not (self.base_weight == other.base_weight):
+            return False
+        if not np.array_equal(self.tensor, other.tensor):
+            return False
+        return True
 
 @dataclass
 class TensorWeightBasis: # basis of TensorWeights to span desired space
@@ -291,32 +331,67 @@ class LibraryData(object):  # structures information associated with a given ran
     def clear_results(self): # create a copy of self without results computed
         return replace(self, Q=None, col_weights=None, row_weights=None)
 
+#function for initializing global variables for each parallel worker process
+def init_domain_worker(dataset_init, current_irrep_init, by_parts_init, debug_init):
+    global worker_dataset, worker_current_irrep, worker_by_parts, worker_debug
+    worker_dataset = dataset_init
+    worker_current_irrep = current_irrep_init
+    worker_by_parts = by_parts_init
+    worker_debug = debug_init
+
+#function to be executed in parallel to evaluate all terms for a given domain
+def parallel_domain_task(domain):
+    dataset = worker_dataset
+    irrep = worker_current_irrep
+    by_parts = worker_by_parts
+    debug = worker_debug
+
+    domain_results_dict = defaultdict(float)
+
+    for t, w, term, tensor_weight in dataset.integrated_terms_tuples:
+        if w.scale == 0:
+            continue
+        value = dataset.eval_on_domain(t, w, domain)
+        key = term, tensor_weight
+        domain_results_dict[key] += value
+    
+    # Free up memory by removing cached field_dict entries for this domain
+    if dataset.cleanup_cache and dataset.field_dict is not None:
+        keys_to_remove = [key for key in dataset.field_dict.keys() if len(key) == 2 and key[1] == domain]
+        for key in keys_to_remove:
+            del dataset.field_dict[key]
+    
+    return domain, domain_results_dict
+
 @dataclass(kw_only=True)
 class AbstractDataset(object): # template for structure of all data associated with a given sparse regression dataset
-    world_size: List[float] # linear dimensions of dataset in physical units (spatial + time)
-    data_dict: Dict[Observable, np.ndarray[float]] # observable -> array of values (e.g. discrete - particle, spatial index, time)
-    observables: List[Observable]  # list of observables
+    world_size: list[float] # linear dimensions of dataset in physical units (spatial + time)
+    data_dict: dict[Observable, np.ndarray[float]] # observable -> array of values (e.g. discrete - particle, spatial index, time)
+    observables: list[Observable]  # list of observables
     # storage of computed quantities: (prim, domains) [not dims] -> array
     cache_primes: bool = True # whether the field_dict is used
+    cleanup_cache: bool = True # whether to clean up field_dict entries after parallel domain processing
     field_dict: dict[tuple[Any, ...], np.ndarray[float]] = None 
     
-    dxs: List[float] = None # grid spacings
-    weight_dxs: List[float] = None
-    scalar_weights: List[Weight] = None
-    tensor_weight_basis: Dict[Tuple[Union[int, Irrep, Weight], ...], TensorWeightBasis] = field(default_factory=dict)  # (irrep, weight) -> stack
+    dxs: list[float] = None # grid spacings
+    weight_dxs: list[float] = None
+    scalar_weights: list[Weight] = None
+    tensor_weight_basis: dict[tuple[Union[int, Irrep, Weight], ...], TensorWeightBasis] = field(default_factory=dict)  # (irrep, weight) -> stack
     # size of domain in grid units (NOT SUBGRID UNITS, AS ACTUALLY USED IN DISCRETE COMPUTATION)
-    domain_size: List[float] = None 
-    domains: List[IntegrationDomain] = None
+    domain_size: list[float] = None 
+    domains: list[IntegrationDomain] = None
     pad: float = 0
-    libs: Dict[Union[int, Irrep], LibraryData] = None # irrep label (e.g. 0, 1, "2s" irrep) -> LibraryData object
-    irreps: List[Union[int, str]] = (0, 1) # set of irreducible representations to generate libraries for = libs.keys()
+    libs: dict[Union[int, Irrep], LibraryData] = None # irrep label (e.g. 0, 1, "2s" irrep) -> LibraryData object
+    irreps: list[Union[int, str]] = (0, 1) # set of irreducible representations to generate libraries for = libs.keys()
 
-    scale_dict: Dict[str, float] = None # dict of characteristic scales of observables -> (mean, std)
+    scale_dict: dict[str, float] = None # dict of characteristic scales of observables -> (mean, std)
     xscale: float = 1  # length scale for correct computation of char scales (default 1)
     tscale: float = 1  # time scale
 
     metric: Metric = None # we support only constant coeff metrics for now
     metric_is_identity: bool = True
+
+    integrated_terms_tuples: list[tuple[LibraryTerm, Weight, LibraryTerm, TensorWeight]] = None # for tracking parallel domain tasks
 
     def __post_init__(self):
         self.n_dimensions = len(self.world_size) # number of dimensions (spatial + temporal)
@@ -343,21 +418,48 @@ class AbstractDataset(object): # template for structure of all data associated w
     def only_rank2_irreps(cls):
         return (Antisymmetric(rank=2), SymmetricTraceFree(rank=2)) 
     
-    def make_libraries(self, max_complexity=4, max_observables=3, max_rho=999): # populate libs
+    def make_libraries(self, **kwargs): # populate libs
         pass
 
     def make_domains(self, ndomains, domain_size, pad=0): # set domain_size/populate domains
         pass
 
-    def make_weights(self, m, qmax): # populate weights/set weight_dxs
+    def make_weights(self, m: int, q_lists: list[list[int]] | None = None, qmax_list: list[int] | None = None,qmax: int | None = None, symmetry: str | None = None) -> None: # populate weights/set weight_dxs
+        # symmetry applies only when using qmax (legacy behavior). symmetry: {None, "even", "odd"}
         self.weights = []
         self.weight_dxs = [(width - 1) / 2 * dx for width, dx in zip(self.domain_size, self.dxs)]
-        for q in lists_for_N(self.n_dimensions, qmax):
-            weight = Weight([m] * self.n_dimensions, q, [0] * self.n_dimensions, dxs=self.weight_dxs)
+        n_dims = self.n_dimensions
+
+        if q_lists is not None:
+            if len(q_lists) != n_dims:
+                raise ValueError(f"q_lists must have length equal to number of space+time dimensions {n_dims}, got {len(q_lists)}")
+            q_iterator = product(*q_lists)
+            apply_symmetry = False
+        elif qmax_list is not None:
+            if len(qmax_list) != n_dims:
+                raise ValueError(f"qmax_list must have length equal to number of space+time dimensions {n_dims}, got {len(qmax_list)}")
+            q_iterator = product(*(range(qm + 1) for qm in qmax_list))
+            apply_symmetry = False
+        else:
+            if qmax is None:
+                raise ValueError("One of q_lists, qmax_list, or qmax must be provided.")
+            q_iterator = lists_for_N(n_dims, qmax)
+            apply_symmetry = True
+
+        for q in q_iterator:
+            q_list = list(q)
+            if len(q_list) != n_dims:
+                raise ValueError(f"Each q must have length {n_dims}, got {len(q_list)}")
+            if apply_symmetry:
+                if symmetry == "even" and any(q_i % 2 == 1 for q_i in q_list):
+                    continue
+                elif symmetry == "odd" and any(q_i % 2 == 0 for q_i in q_list):
+                    continue
+            weight = Weight([m] * n_dims, q_list, [0] * n_dims, dxs=self.weight_dxs)
             self.weights.append(weight)
             for irrep in self.irreps:
                 # note that we need to count spatial dimensions for this
-                self.tensor_weight_basis[irrep, weight] = TensorWeightBasis.make_basis(weight, self.n_dimensions-1, irrep)
+                self.tensor_weight_basis[irrep, weight] = TensorWeightBasis.make_basis(weight, n_dims-1, irrep)
 
     def get_index_assignments(self, term, tensor_weight, debug=False): # ONLY IMPLEMENTING FOR SIMPLER IDENTITY METRIC CASE
         n_spatial_dims = self.n_dimensions-1
@@ -383,11 +485,11 @@ class AbstractDataset(object): # template for structure of all data associated w
             lenf = len(filtered_flat)
             if lenf==0:
                 print("ARRAY IS 0")
-            else:
-                print("MIDDLE NZ VALUE OF ARRAY:", '{:.2E}'.format(filtered_flat[lenf//2])) # middle of the array
+            #else:
+            #    print("MIDDLE NZ VALUE OF ARRAY:", '{:.2E}'.format(filtered_flat[lenf//2])) # middle of the array
         result = int_arr(term_weight_product, dxs=self.dxs)
-        if debug:
-            print('Integrated result', result)
+        #if debug:
+        #    print('Integrated result', result)
         return result
 
     # to be used in non-identity metric case
@@ -409,7 +511,8 @@ class AbstractDataset(object): # template for structure of all data associated w
         for prime in term.primes:
         #    if debug:
         #        print(f"LibraryPrime {prime}")
-            if self.cache_primes and (prime, domain) in self.field_dict.keys():  # field is "cached"
+            # field is "cached"
+            if self.cache_primes and (prime, domain) in self.field_dict.keys():
                 data_slice = self.field_dict[prime, domain]
             else:
                 data_slice = self.eval_prime(prime, domain)
@@ -446,8 +549,8 @@ class AbstractDataset(object): # template for structure of all data associated w
                 print("UNINDEXED TERM:")
                 print(term)
             column = []
-            term_symmetry = term.symmetry()
             if debug:
+                term_symmetry = term.symmetry()
                 print("Symmetry:", term_symmetry)
             wd_dict = defaultdict(int) # group by weight/domain, aggregate by assignment & integration by parts term
             for weight in self.weights:
@@ -461,6 +564,8 @@ class AbstractDataset(object): # template for structure of all data associated w
                             print("Indexed term:", indexed_term)
                             print("Scalar weight:", scalar_weight)
                         for t, w in int_by_parts(indexed_term, scalar_weight, by_parts):
+                            if w.scale == 0:
+                                continue
                             if debug:
                                 print("INT BY PARTS:", indexed_term, "->")
                                 print("Integrated term:", t)
@@ -483,12 +588,77 @@ class AbstractDataset(object): # template for structure of all data associated w
                         column.append(wd_dict[tensor_weight, domain])
             cols_list.append(column)
         return np.array(cols_list).transpose() # convert to numpy array
+    
+    def make_Q_parallel(self, irrep, by_parts=True, debug=False, num_processors=None):
+        init_args = (self, irrep, by_parts, debug)
+        domains = self.domains
+        all_results = []
+
+        #precompute symbolic manipulations for parallel tasks
+        self.integrated_terms_tuples = []
+        for term in list(self.libs[irrep].terms):
+            if debug:
+                print("UNINDEXED TERM:")
+                print(term)
+                term_symmetry = term.symmetry()
+                print("Symmetry:", term_symmetry)
+            for weight in list(self.weights):
+                for tensor_weight in self.tensor_weight_basis[(irrep, weight)].tw_list:
+                    if debug:
+                        print("Tensor weight:", tensor_weight)
+                    for indexed_term, scalar_weight in self.get_index_assignments(term,tensor_weight): #, debug
+                        if debug:
+                            print("ASSIGNMENTS:", term, "->")
+                            print("Indexed term:", indexed_term)
+                            print("Scalar weight:", scalar_weight)
+                        for t, w in int_by_parts(indexed_term, scalar_weight, by_parts):
+                            if debug:
+                                print("INT BY PARTS:", indexed_term, "->")
+                                print("Integrated term:", t)
+                                print("Integrated weight:", w)
+                            self.integrated_terms_tuples.append((t,w,term,tensor_weight))
+
+        #begin parallel task execution
+        with concurrent.futures.ProcessPoolExecutor(max_workers=num_processors, initializer=init_domain_worker, initargs=init_args) as executor:
+            results = executor.map(parallel_domain_task, domains)
+            for result in results:
+                all_results.append(result)
+                  
+        terms = list(self.libs[irrep].terms)
+        weights = list(self.weights)
+        num_cols = len(terms)
+        term_to_col_idx = {term: i for i, term in enumerate(terms)}
+        row_map = {}
+        current_row_idx = 0
+        for weight in weights:
+            for tensor_weight in self.tensor_weight_basis[(irrep, weight)].tw_list:
+                for domain in domains:
+                    row_key = (tensor_weight, domain)
+                    if row_key not in row_map:
+                        row_map[row_key] = current_row_idx
+                        current_row_idx += 1
+        num_rows = current_row_idx
+
+        Q_matrix = np.zeros((num_rows, num_cols), dtype=np.float64)
+
+        for domain, domain_results in all_results:
+            for (term, tensor_weight), result in domain_results.items():
+                col_idx = term_to_col_idx[term]
+                row_idx = row_map[(tensor_weight, domain)]
+
+                Q_matrix[row_idx, col_idx] = result
+
+        return Q_matrix
+
         
-    def make_library_matrices(self, by_parts=True, debug=False): # compute LibraryData Q matrices
+    def make_library_matrices(self, by_parts=True, debug=False, parallel=True, num_processors=None): # compute LibraryData Q matrices
         for irrep in self.irreps:
             if debug:
-                print(f"***RANK {irrep} LIBRARY***")
-            self.libs[irrep].Q = self.make_Q(irrep, by_parts, debug)
+                print(f"***{irrep} LIBRARY***")
+            if parallel:
+                self.libs[irrep].Q = self.make_Q_parallel(irrep, by_parts, debug, num_processors)
+            else:
+                self.libs[irrep].Q = self.make_Q(irrep, by_parts, debug)
         self.find_scales()
         for irrep in self.irreps:
             self.libs[irrep].col_weights = [self.get_char_size(term) for term in self.libs[irrep].terms]
@@ -543,7 +713,7 @@ def int_by_parts(term, weight, by_parts=True, dim=0):
 
 # for integration by parts, check terms that look like x', x*x', and x*x*x' (vs all other terms have derivative orders
 # smaller by at least 2) 
-# maybe his misses out on opportunities to integrate by parts using a different basis, but this seems
+# maybe this misses out on opportunities to integrate by parts using a different basis, but this seems
 # too difficult to automate; at that point it's probably easier to just write the term out manually.
 
 # match statement for scalar or tensor weight?
