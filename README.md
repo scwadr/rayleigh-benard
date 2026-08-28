@@ -1,37 +1,45 @@
-# Rayleigh-Benard workflow
+# Rayleigh-Benard / SPIDER experiments
 
-## Run the full Dedalus pipeline on the cluster
+The notebooks in the repository root contain the main analysis workflow.
 
-The full batch workflow runs condition setup, stabilization, and production in
-that order. From a login shell at the repository root, submit it with:
+## Repository layout
+
+- `SPIDER/` — vendored `src/PySPIDER` code from the upstream PySPIDER repository.
+- `dedalus/` — Dedalus simulations and plotting scripts.
+- `slurm/` — batch scripts and historical job output.
+- `dedalus/paper-test/` and `slurm/paper-test/` — the full-resolution workflow.
+
+## Run the full workflow
+
+From the repository root on the cluster:
 
 ```bash
 sbatch slurm/paper-test/run_convection.sbatch
 ```
 
-You do not need to run `salloc` or otherwise allocate resources first. `sbatch`
-submits a non-interactive job, and the `#SBATCH` directives in the script request
-the node, tasks, time limit, account, QOS, and hardware constraint. Use `salloc`
-only when you intentionally want an interactive debugging session.
-
-The script can also be submitted while your shell is in a repository
-subdirectory. It uses `SLURM_SUBMIT_DIR` to locate the repository root before
-launching the files under `dedalus/paper-test`.
-
-Check the queued or running job with:
+This runs condition setup, stabilization, and production. No prior `salloc` is
+needed; `sbatch` requests the resources declared in the script. Monitor it with:
 
 ```bash
 squeue -u "$USER"
 ```
 
-The job ID is printed by `sbatch`. Standard output is written in the directory
-from which `sbatch` was invoked, using a name like
-`rb_convection-<job-id>-full.out`.
+The log is created in the submission directory as
+`rb_convection-<job-id>-full.out`. Before running, check that the `dedalus3`
+Conda environment and the `/storage/scratch1/2/ashelestov3/...` paths used by the
+Python scripts are valid for your account.
 
-The pipeline stops on the first failed phase. The final success message is
-printed only after all three phases finish successfully.
+Other batch scripts can also be submitted from the repository root or any of its
+subdirectories. They locate the root before launching files from `dedalus/`.
 
-Before submission, confirm that the `dedalus3` Conda environment exists and that
-the hard-coded `/storage/scratch1/2/ashelestov3/...` checkpoint and snapshot
-paths in the three Python scripts are appropriate for the account running the
-job.
+## Update SPIDER
+
+`SPIDER/` contains only `src/PySPIDER` from
+<https://github.com/sibirica/PySPIDER>. Sync the upstream `main` branch with:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\sync-pyspider.ps1
+```
+
+Review and commit the result. The upstream commit is recorded in
+`.pyspider-revision` when the sync script runs.
