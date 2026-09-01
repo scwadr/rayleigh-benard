@@ -1,14 +1,15 @@
 #!/bin/bash
-set -euo pipefail
 
-#SBATCH --job-name=rb_convection       # A name for your job
-#SBATCH --account=gts-rg119            # Your charge account
-#SBATCH --qos=embers                   # The 'embers' QOS queue
-#SBATCH --constraint=amd               # Request AMD nodes
-#SBATCH --nodes=1                      # Request 1 node
-#SBATCH --ntasks-per-node=128          # Request all 128 cores on the node
-#SBATCH --time=08:00:00                # Set 8 hour time limit
+#SBATCH --job-name=rb_convection
+#SBATCH --account=gts-rg119
+#SBATCH --qos=embers
+#SBATCH --constraint=amd
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=128
+#SBATCH --time=08:00:00
 #SBATCH --output=%x-%j-full.out
+
+set -euo pipefail
 
 # 1. Load your modules
 module load anaconda3
