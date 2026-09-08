@@ -16,6 +16,42 @@
 
 # EXPERIMENT LOG
 
+## 2026-09-08: Lobatto implementation audit against the pinned fork
+
+- Read the continuous dataset, shared matrix assembly, integration, quadrature,
+  weight, and regression implementations at the pinned PySPIDER revision
+  `91b9d6b3dee9d8c22118a9cd4a30132ea3fb5196`. PySPIDER remains unmodified.
+- The Gauss-to-Lobatto DCT-II/DCT-I normalization and ascending-node ordering
+  are consistent. Left the preprocessing notebook unchanged.
+- The full mapped interior Lobatto grid, physical `grids`, fixed vertical
+  quadrature nodes, and full-height recovery domains match the fork's API.
+  Its weight derivatives use each domain's physical half-width per axis;
+  `set_LT_scale` only sets characteristic regression column sizes. Thus the
+  single `L` is a conditioning choice, not an incorrect vertical derivative
+  scale. The omitted x/time trapezoidal spacing factors multiply every column
+  by the same constant here and do not change a homogeneous balance.
+- Left the periodic x filter and quadrature-weighted z filter unchanged.
+  These approximate an interior translation-invariant convolution; discrete
+  filtering/differentiation commutation and product resolution still need
+  numerical assessment on PACE, not an assumption of exact conservation.
+- Fixed recovery-library bookkeeping:
+  - Retained `dt(b) * z_hat`: a constant vertical unit vector does not make
+    this time-dependent buoyancy term zero or redundant.
+  - Moved the direct known-momentum diagnostic before numerical pruning, so
+    small/proportional columns cannot remove a required diagnostic term.
+  - Compare zero-column norms after dividing by PySPIDER's characteristic
+    sizes, matching regression scaling instead of comparing raw magnitudes
+    across different fields and derivative orders. Validate matrix/scale
+    finiteness, and use relative tolerance directly for unit-norm duplicates.
+  - Use momentum viscosity `nu` rather than thermal diffusivity `kappa` in
+    the diagnostic (numerically unchanged for the current Prandtl number 1),
+    and print each known term's contribution norm.
+- Validation was static source review, notebook JSON inspection, and git
+  whitespace checks only. No local scientific tests or cluster runs were
+  performed. These fixes do not establish the cause of the failed September 4
+  recovery or demonstrate successful recovery; domain count, sampling geometry,
+  filtering errors, and residuals remain PACE follow-up items.
+
 ## 2026-09-04: Chebyshev-Lobatto PySPIDER test
 
 ### Confirmed grid findings
