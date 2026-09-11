@@ -1,6 +1,6 @@
 # RULES
 
-1. Commit every change.
+1. Make a separate commit for every logical part of an implementation, rather than one commit per prompt.
 
 2. These programs run only on a remote headless Linux cluster (Georgia Tech PACE), so testing cannot be performed in this development environment because the required packaging is too complex to support here.
 
