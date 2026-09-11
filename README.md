@@ -2,28 +2,6 @@
 
 The notebooks in the repository root contain the main analysis workflow.
 
-`COnvection-FILTER-Copy2.ipynb` now includes an **SGS stress model discovery**
-section based on sections 2.2 and 3.1 of the draft in `papers/`. On PACE, run the
-loading and filtering cells, the known momentum-balance diagnostic, and then the
-discovery section. Its helper is `scripts/tau_discovery.py` (use the repository
-root as the notebook working directory).
-
-The searches fit the scalar trace and symmetric traceless parts of full `tau`,
-then the residuals after the paper's second- and fourth-order gradient stresses.
-Each stage saves symbolic terms, physical coefficients, removed columns, and
-training/later-time validation errors to `tau-discovery-delta-<width>.json`.
-The configuration cell controls library size, integration domains, worker count,
-optional buoyancy predictors, and an optional evolution search for residual `R`.
-Increase domain counts if the library is underdetermined. `max_terms` includes
-the fixed target column. Inspect residuals and repeat over filter widths; the code
-does not assume that the paper's freely decaying-flow closure fits convection.
-
-This uses the notebook's filtered DNS grid and wall-normal support trimming, not
-the paper's additional spectral projection onto an LES grid. The optional `R`
-search is an offline inference step, not an implemented LES time integrator.
-Local review is limited to notebook JSON, Python syntax, and API inspection;
-numerical validation requires the cluster environment and data.
-
 ## Repository layout
 
 - `SPIDER/` — vendored `src/PySPIDER` code from the upstream PySPIDER repository.
