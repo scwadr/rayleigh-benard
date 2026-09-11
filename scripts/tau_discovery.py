@@ -5,7 +5,6 @@ No simulation dependencies are imported until a discovery stage is requested.
 """
 
 import json
-from collections import Counter
 from pathlib import Path
 
 import numpy as np
@@ -122,7 +121,6 @@ def discover_stage(fields, ranks, target, dxs, *, evolution=False,
                    for name, rank in ranks.items()]
     irreps = (FullRank(rank=0), SymmetricTraceFree(rank=2))
     datasets = []
-    reference_terms = None
     for start, stop, count in ((0, split, ndomains), (split, shape[2], validation_domains)):
         block = {name: a[:, 2:-2, start:stop, ...] for name, a in fields.items()}
         ds = SRDataset(world_size=block[target].shape[:3], data_dict=block,
@@ -137,20 +135,6 @@ def discover_stage(fields, ranks, target, dxs, *, evolution=False,
                     return False
                 return evolution or all(p.derivand.string != target for p in term.primes)
             lib.terms = [term for term in lib.terms if allowed(term)]
-        if reference_terms is None:
-            reference_terms = {irrep: tuple(ds.libs[irrep].terms) for irrep in irreps}
-        else:
-            # Z3 may enumerate equivalent tensor indexings in a different order
-            # on successive calls.  Q columns must nevertheless use the exact
-            # training order so held-out coefficients refer to the same terms.
-            for irrep in irreps:
-                generated = ds.libs[irrep].terms
-                expected = reference_terms[irrep]
-                if Counter(generated) != Counter(expected):
-                    raise ValueError(
-                        f"Training and validation libraries contain different terms for {irrep}"
-                    )
-                ds.libs[irrep].terms = list(expected)
         np.random.seed(seed)
         ds.make_domains(ndomains=count, domain_size=list(domain_size), pad=0)
         ds.make_weights(m=16, qmax=0)
@@ -163,7 +147,7 @@ def discover_stage(fields, ranks, target, dxs, *, evolution=False,
     for irrep in irreps:
         lib, heldout = train.libs[irrep], validation.libs[irrep]
         if lib.terms != heldout.terms:
-            raise RuntimeError("Internal error: validation terms were not aligned to training")
+            raise ValueError("Training and validation library order differs")
         if not np.isfinite(heldout.Q).all():
             raise ValueError("Nonfinite validation matrix")
         anchors = [j for j, term in enumerate(lib.terms)
