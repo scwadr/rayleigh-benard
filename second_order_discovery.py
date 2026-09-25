@@ -6,6 +6,9 @@ from dataclasses import dataclass
 import numpy as np
 
 from SPIDER.commons.library import Observable
+from SPIDER.commons.sparse_reg_bf import (
+    Initializer, ModelIterator, Residual, Scaler, Threshold, sparse_reg_bf,
+)
 from SPIDER.continuous.process_library_terms import SRDataset
 
 
@@ -152,3 +155,45 @@ def residual_problem(lib, target_name, gradient_name, coefficient, *,
         target_name=target_name, gradient_name=gradient_name,
         removed=removed, residual_is_zero=is_zero,
     )
+
+
+def discover_corrections(problem, *, maximum_correction_terms=5, seed=1):
+    """Fit R with a fixed target coefficient and return physical coefficients.
+
+    The zero-correction model is included explicitly. SPIDER's n_terms counts
+    the forced residual column as one term in addition to the predictors.
+    All rows are used, matching first-order discovery; these are training fits.
+    """
+    if maximum_correction_terms < 1:
+        raise ValueError("maximum_correction_terms must be positive")
+    n_predictors = problem.Q.shape[1] - 1
+    fits = [{"correction_terms": 0, "coefficients": np.zeros(n_predictors),
+             "result": None}]
+    if problem.residual_is_zero or n_predictors == 0:
+        return fits
+    scaled = problem.Q / problem.weights
+    # Avoid Scaler's division by zero on rows where every column vanishes.
+    active = np.linalg.norm(scaled, axis=1) > 0
+    Q = problem.Q[active]
+    max_k = min(maximum_correction_terms + 1, Q.shape[1], Q.shape[0])
+    if max_k < 2:
+        raise ValueError("Insufficient nonzero rows for correction discovery")
+    for n_terms in range(2, max_k + 1):
+        result = sparse_reg_bf(
+            Q,
+            scaler=Scaler(sub_inds=None, char_sizes=problem.weights,
+                          row_norms=None, unit_rows=True, train_fraction=1),
+            initializer=Initializer(method="power", start_k=max_k),
+            residual=Residual(residual_type="matrix_relative"),
+            model_iterator=ModelIterator(max_k=max_k, backward_forward=True,
+                                         max_passes=20),
+            threshold=Threshold(threshold_type="jump", gamma=1.5,
+                                delta=1e-6, n_terms=n_terms),
+            inhomog=True, inhomog_col=0, verbose=False, seed=seed,
+        )
+        if not np.isfinite(result.xi).all() or result.xi[0] == 0:
+            raise ValueError("Regression did not retain a finite residual target")
+        coefficients = -result.xi[1:] / result.xi[0]
+        fits.append({"correction_terms": int(np.count_nonzero(coefficients)),
+                     "coefficients": coefficients, "result": result})
+    return fits
