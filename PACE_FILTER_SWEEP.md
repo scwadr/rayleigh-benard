@@ -112,3 +112,34 @@ directly, so notebook fixes automatically apply to the batch workflow. Save the
 notebook before submission or interactive archiving. Local scientific execution
 is intentionally excluded by the repository instructions; run verification on
 PACE.
+
+## Equivalence and paper accuracy
+
+The current batch workflow shares the current notebook code, but the notebook
+is not fully equivalent to the historical version: the homogeneous/AIC searches
+were removed, targeted recovery replaced numeric anchors, and numerical settings
+changed. See [NOTEBOOK_EQUIVALENCE.md](NOTEBOOK_EQUIVALENCE.md) for the full audit.
+The older Dedalus simulation batch scripts are unchanged.
+
+Flux archives now include the paper's equations (3.8)–(3.9) accuracy A for the
+closure and its flux, plus the integrated mean-flux ratio. Pearson correlation
+remains a separate diagnostic. With `--plots`, each run also saves
+`paper_accuracy.png`. After a sweep completes, use the same analysis environment:
+
+```bash
+python run_filter_sweep.py --compare-runs /path/to/scratch/filter_verification
+```
+
+This creates a unique comparison directory containing
+`accuracy_vs_filter_scale.png`, CSV values, and a JSON report. It performs no new
+filtering or regression. Use a dedicated output root per sweep, with one complete
+run per scale and matching data/settings. Old archives without A are skipped;
+their flux cells must be rerun to generate this metric.
+
+By default, curves compare the fitted/theoretical first-order baselines against
+Delta/dx. Add `--include-corrections` to plot correction candidates as well.
+Add `--reference-length LENGTH` to plot Delta/LENGTH, with LENGTH expressed in
+the same physical units as the saved coordinates. No paper length scale is
+inferred from the convection data. Different filter widths retain different
+vertical interiors after wall-support trimming; account for this when comparing
+curves.

@@ -19,7 +19,11 @@ from uuid import uuid4
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--delta-dx', type=float, required=True, help='Gaussian delta in raw x grid spacings')
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument('--delta-dx', type=float, help='Gaussian delta in raw x grid spacings')
+    mode.add_argument('--compare-runs', help='Plot paper accuracy versus width from completed flux archives under this root')
+    parser.add_argument('--reference-length', type=float, help='Physical reference length for comparison x axis; otherwise use Delta/dx')
+    parser.add_argument('--include-corrections', action='store_true', help='Include independently refitted correction candidates in comparison curves')
     parser.add_argument('--data-path')
     parser.add_argument('--output-root', default='thesis_runs')
     parser.add_argument('--workers', type=int, default=int(os.environ.get('SLURM_CPUS_PER_TASK', '1')))
@@ -39,7 +43,28 @@ def parse_args():
     return parser.parse_args()
 
 
+def compare_runs(args):
+    """Execute only the notebook's archive-comparison plotting cell."""
+    root = str(Path(args.compare_runs).resolve())
+    repo = Path(__file__).resolve().parent
+    os.chdir(repo)
+    os.environ['MPLBACKEND'] = 'Agg'
+    notebook_path = repo / 'COnvection-FILTER-Copy2.ipynb'
+    notebook = json.loads(notebook_path.read_bytes())
+    cells = [cell for cell in notebook['cells'] if cell['cell_type'] == 'code'
+             and 'pace:sweep_plot' in cell.get('metadata', {}).get('tags', [])]
+    if len(cells) != 1:
+        raise RuntimeError('Expected one notebook sweep-comparison cell')
+    namespace = globals()
+    namespace['SWEEP_COMPARE_CONFIG'] = dict(root=root, reference_length=args.reference_length,
+                                            include_corrections=args.include_corrections)
+    source = ''.join(cells[0]['source'])
+    exec(compile(source, f'{notebook_path}::cell::{cells[0]["id"]}', 'exec'), namespace)
+
+
 def run_notebook(args):
+    if args.reference_length is not None or args.include_corrections:
+        raise ValueError('--reference-length and --include-corrections require --compare-runs')
     if sys.version_info < (3, 12):
         raise RuntimeError('Vendored SPIDER uses Python 3.12 syntax; activate its PACE environment')
     for name in ('delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'alpha',
@@ -134,4 +159,8 @@ def run_notebook(args):
 
 
 if __name__ == '__main__':
-    run_notebook(parse_args())
+    arguments = parse_args()
+    if arguments.compare_runs:
+        compare_runs(arguments)
+    else:
+        run_notebook(arguments)
