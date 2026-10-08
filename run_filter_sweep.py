@@ -26,19 +26,19 @@ def parse_args():
     parser.add_argument('--include-corrections', action='store_true', help='Include independently refitted correction candidates in comparison curves')
     parser.add_argument('--data-path')
     parser.add_argument('--output-root', default='thesis_runs')
-    parser.add_argument('--workers', type=int, default=int(os.environ.get('SLURM_CPUS_PER_TASK', '1')))
-    parser.add_argument('--domains', type=int, default=1000)
-    parser.add_argument('--domain-width', type=int, default=64)
-    parser.add_argument('--domain-time', type=int, default=40)
+    parser.add_argument('--workers', type=int, default=int(os.environ['SLURM_CPUS_PER_TASK']) if 'SLURM_CPUS_PER_TASK' in os.environ else None)
+    parser.add_argument('--domains', type=int, help='Explicit override; otherwise retain original domain-count formulas')
+    parser.add_argument('--domain-width', type=int)
+    parser.add_argument('--domain-time', type=int)
     parser.add_argument('--time-start', type=int, default=0)
     parser.add_argument('--time-stop', type=int)
-    parser.add_argument('--seed', type=int, default=1)
-    parser.add_argument('--alpha', type=float, default=3.)
-    parser.add_argument('--recovery-max-terms', type=int, default=8)
-    parser.add_argument('--closure-max-terms', type=int, default=6)
-    parser.add_argument('--maximum-correction-terms', type=int, default=5)
-    parser.add_argument('--skip-second-order', action='store_true', help='Run recovery and first-order/shared closures only; also skips flux')
-    parser.add_argument('--skip-flux', action='store_true', help='Skip expensive pointwise second-order flux diagnostics')
+    parser.add_argument('--alpha', type=float)
+    parser.add_argument('--homogeneous-max-k', type=int, help='Explicit upper limit for original AIC sweep (default 39)')
+    parser.add_argument('--closure-max-terms', type=int)
+    parser.add_argument('--maximum-correction-terms', type=int)
+    parser.add_argument('--skip-inhomogeneous-experiments', action='store_true', help='Skip the consolidated original numeric-target experiments')
+    parser.add_argument('--skip-baseline-residuals', '--skip-second-order', dest='skip_baseline_residuals', action='store_true', help='Explicitly omit prescribed gradient comparisons/residual searches; general discovery and flux remain')
+    parser.add_argument('--skip-flux', action='store_true', help='Skip pointwise flux diagnostics')
     parser.add_argument('--plots', action='store_true', help='Save the final plotting cells using Agg')
     return parser.parse_args()
 
@@ -68,11 +68,11 @@ def run_notebook(args):
     if sys.version_info < (3, 12):
         raise RuntimeError('Vendored SPIDER uses Python 3.12 syntax; activate its PACE environment')
     for name in ('delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'alpha',
-                 'recovery_max_terms', 'closure_max_terms', 'maximum_correction_terms'):
-        if not getattr(args, name) > 0:
+                 'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms'):
+        if getattr(args, name) is not None and not getattr(args, name) > 0:
             raise ValueError(f'{name} must be positive')
-    if args.recovery_max_terms < 6:
-        raise ValueError('Use at least 6 recovery terms to admit the complete momentum balance')
+    if args.homogeneous_max_k is not None and args.homogeneous_max_k < 5:
+        raise ValueError('The original homogeneous AIC sweep starts at max_k=5')
     if args.time_start < 0 or (args.time_stop is not None and args.time_stop <= args.time_start):
         raise ValueError('Invalid time window')
     repo = Path(__file__).resolve().parent
@@ -93,7 +93,9 @@ def run_notebook(args):
     job_dir.mkdir(parents=True, exist_ok=False)
     config = {name: getattr(args, name) for name in (
         'delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'time_start', 'time_stop',
-        'seed', 'alpha', 'recovery_max_terms', 'closure_max_terms', 'maximum_correction_terms')}
+        'alpha', 'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms')
+        if getattr(args, name) is not None}
+    config['baseline_residuals'] = not args.skip_baseline_residuals
     config.update(output_root=str(output_root), run_dir=str(job_dir))
     if data_path:
         config['data_path'] = data_path
@@ -103,13 +105,17 @@ def run_notebook(args):
     (job_dir / 'executed_notebook.ipynb').write_bytes(content)
     manifest = dict(created_utc=created.isoformat(), status='running', config=config,
         notebook_sha256=hashlib.sha256(content).hexdigest(),
-        requested=dict(second_order=not args.skip_second_order,
-                       flux=not (args.skip_second_order or args.skip_flux), plots=args.plots), cells=[])
-    allowed = {'setup', 'recovery', 'first_order', 'shared_closure'}
-    if not args.skip_second_order:
-        allowed.add('second_order')
-        if not args.skip_flux:
-            allowed.add('flux')
+        workflow='restored original notebook',
+        requested=dict(baseline_residuals=not args.skip_baseline_residuals,
+                       numeric_target_experiments=not args.skip_inhomogeneous_experiments,
+                       flux=not args.skip_flux, plots=args.plots), cells=[])
+    allowed = {'setup', 'library', 'homogeneous', 'closures', 'archive'}
+    if not args.skip_baseline_residuals:
+        allowed.add('baseline_residuals')
+    if not args.skip_inhomogeneous_experiments:
+        allowed.add('inhomogeneous')
+    if not args.skip_flux:
+        allowed.add('flux')
     if args.plots:
         allowed.add('plot')
     print('Run directory:', job_dir, flush=True)
@@ -139,12 +145,37 @@ def run_notebook(args):
             linecache.cache[filename] = (len(source), None, source.splitlines(True), filename)
             print(f'Executing {record["stage"]}: {cell["id"]}', flush=True)
             started = time.monotonic()
-            exec(compile(source, filename, 'exec'), namespace)
+            if stages[0] == 'plot':
+                import matplotlib.pyplot as plt
+                plot_dir = job_dir / 'plots'
+                plot_dir.mkdir(exist_ok=True)
+                original_show = plt.show
+                figure_count = [0]
+
+                def save_shown_figures(*unused_args, **unused_kwargs):
+                    for number in plt.get_fignums():
+                        figure_count[0] += 1
+                        plt.figure(number).savefig(
+                            plot_dir / f'{cell["id"]}_{figure_count[0]:02d}.png', dpi=150)
+                    plt.close('all')
+
+                plt.show = save_shown_figures
+                try:
+                    exec(compile(source, filename, 'exec'), namespace)
+                finally:
+                    plt.show = original_show
+            else:
+                exec(compile(source, filename, 'exec'), namespace)
             record.update(status='complete', seconds=time.monotonic()-started)
             save_manifest()
         executed = {r['stage'] for r in manifest['cells'] if r['status'] == 'complete'}
         if not allowed <= executed:
             raise RuntimeError(f'Missing requested notebook stages: {allowed-executed}')
+        if namespace.get('legacy_regression_failures'):
+            manifest.update(status='finished_with_errors',
+                            regression_failures=namespace['legacy_regression_failures'])
+            save_manifest()
+            raise RuntimeError('Original homogeneous sweep caught errors; see archived failures')
         manifest.update(status='complete', validation_status='execution succeeded; scientific errors require review')
         save_manifest()
         (job_dir / 'COMPLETE').write_text(datetime.now(timezone.utc).isoformat(), encoding='utf-8')

@@ -1,145 +1,137 @@
-# PACE filter-scale verification
+# Restored notebook and PACE filter sweep
 
-Submit from this repository on PACE, with the Python 3.12+ environment used for
-the SPIDER notebook already installed. The Slurm defaults follow the existing
-repository's account/QOS/AMD configuration; override them if your allocation
-differs. `SPIDER_ENV` accepts a conda environment name or path.
+The runner executes tagged cells from `COnvection-FILTER-Copy2.ipynb`. Scientific
+implementation and archiving remain in the notebook. See the
+[restoration record](NOTEBOOK_EQUIVALENCE.md) for the source comparison.
 
-```bash
-sbatch slurm/run_filter_sweep.sbatch
-```
+## Complete notebook run
 
-The array runs delta/dx = **10, 25, 50, 75**, one task at a time. Each task requests
-one node, 32 CPUs, all node memory (`--mem=0`), and eight hours. These are starting
-resource requests, not measured requirements. SPIDER uses the allocated CPUs;
-BLAS/OpenMP threads are limited to one per worker. The shell returns immediately
-after submission. Watch `squeue -u "$USER"` and the `rb_filter_check-<array>_<task>.out`
-files; cancel with `scancel <array-job-id>`.
+On PACE, restart the kernel and run all cells from the top. The default filter
+width is **Delta/dx=50**. The order is:
 
-For a shorter first PACE execution, keep the full momentum sparsity range but
-reduce sampled integration domains and correction sparsities:
+1. Imports, controls, loading, filtering, measured tau/phi, and library integration.
+2. Broad homogeneous AIC sweep and jump search.
+3. General tau and phi discovery from the original shared library.
+4. Consolidated original inhomogeneous regression experiments.
+5. Fitted/theoretical gradient comparisons and residual discovery.
+6. Discovery archive, flux evaluation, and flux archive.
+7. Original diagnostic plots and new flux plots.
 
-```bash
-sbatch --array=0-0 slurm/run_filter_sweep.sbatch \
-  --domains 64 --time-stop 80 --maximum-correction-terms 1 --skip-flux --plots
-```
+The last cell compares archived scales only when `SWEEP_COMPARE_CONFIG` is set.
+Otherwise it does nothing. Do not rerun the crop cell alone: like the original,
+it crops arrays in place. Start from loading for a new filter width.
 
-This is an execution check with weaker sampling, not a thesis-quality inference.
-The selected data window must have at least `--domain-time` snapshots. Spatial
-integration domains must fit after trimming. No accuracy threshold is invented:
-successful execution and accurate equation recovery are reported separately.
+For optional overrides, define `RUN_CONFIG` before the controls cell, for example
+`RUN_CONFIG = {'delta_dx': 25, 'workers': 32}`. Without overrides, original
+scientific defaults apply. Gradient comparisons run by default.
 
-Customize the sweep and environment:
+## Background sweep
+
+Use the existing Python 3.12+ SPIDER environment on PACE. From the repository:
 
 ```bash
-export FILTER_SCALES="10 20 40 60"
-export SPIDER_ENV=/path/to/your/SPIDER/environment
-export DATA_PATH=/path/to/preprocessed_paper_data.npz
-export OUTPUT_ROOT=/path/to/scratch/filter_verification
-sbatch --array=0-3%1 --cpus-per-task=16 slurm/run_filter_sweep.sbatch --plots
+export OUTPUT_ROOT="$PWD/thesis_runs/restored_sweep_01"
+sbatch slurm/run_filter_sweep.sbatch --plots
 ```
 
-Change the array bounds when changing the number of filter widths. Command-line
-options after the sbatch file are passed to the Python runner. For one scale
-inside an existing compute allocation:
+The array checks **Delta/dx = 10, 25, 50, 75**, one task at a time. Gaussian sigma
+is Delta/sqrt(12). Each task requests 32 CPUs, all node memory, and eight hours.
+These requests have not been benchmarked for the restored broad searches; adjust
+wall time as needed. Existing account/QOS/node constraints remain in the Slurm file.
+
+`sbatch` returns immediately. Logs are `rb_filter_check-<job>_<task>.out`;
+monitor with `squeue -u "$USER"`. `SPIDER_ENV` selects the conda environment.
+`DATA_PATH` and `OUTPUT_ROOT` override input/output locations. Use a dedicated
+output directory for each sweep.
+
+To change scales, change both the list and array range:
 
 ```bash
-python -u run_filter_sweep.py --delta-dx 25 --workers 8 --plots
+export FILTER_SCALES="10 20 40"
+sbatch --array=0-2%1 slurm/run_filter_sweep.sbatch --plots
 ```
 
-`--skip-second-order` runs momentum/heat recovery plus first-order and general
-shared-library tau/phi discovery, and skips second-order/flux cells.
-`--skip-flux` retains second-order discovery but avoids its expensive pointwise
-flux evaluation. Full discovery and flux diagnostics are enabled by default;
-plots are optional and always run last with a headless backend.
-
-## What is checked
-
-The notebook uses the saved uniform spatial and temporal coordinates, computes
-`dt` from `np.diff(t)`, undoes the preprocessing velocity-component swap, and
-applies a spatial Gaussian with `sigma = delta/sqrt(12)`. Filtering wraps in x;
-the entire filter support is discarded at the vertical walls. Pressure remains
-the ordinary filtered pressure and tau is the full SGS tensor.
-
-Before regression it evaluates the known weak-form balances:
-
-```text
-dt(ubar) + ubar.grad(ubar) + grad(pbar) - nu*lap(ubar)
-        - bbar*ez + div(tau) = 0
-dt(bbar) + ubar.grad(bbar) - kappa*lap(bbar) + div(phi) = 0
-```
-
-Errors with and without SGS divergence show whether the measured terms improve
-the balance. Regression anchors `dt u` and `dt b` structurally, normalizes their
-coefficients to +1, removes numerical zero/duplicate predictor columns, and
-sweeps retained term counts. Vorticity is excluded from the recovery library.
-Known coefficients are used only for the direct check; the regression may
-choose other terms from the shared library, including measured tau/phi terms.
-
-First-order tau/phi fits share one implementation. Tau has trace and STF fits
-and a combined coefficient; both closures are compared with delta²/12. General
-SGS closures and second-order residual discoveries use inhomogeneous regression
-with measured SGS fields as targets and resolved fields as predictors. The
-second-order baseline is frozen, and every candidate remains in the archive.
-
-## Output
-
-Each task gets a unique directory beneath OUTPUT_ROOT. Existing runs are never
-overwritten. Key files:
-
-| File | Contents |
-| --- | --- |
-| `execution.json` | Requested configuration, executed cell IDs, timings, and failure traceback |
-| `executed_notebook.ipynb` | Exact notebook snapshot used by the batch launcher |
-| `provenance.json`, `input_source_*`, `input_coordinates.npz` | Data identity, source revision/snapshots including SPIDER, inferred Dedalus configuration, settings and coordinates |
-| `recovery.json` | Known momentum/heat residuals, all recovered equations and physical coefficients, removed columns, sampled integration domains |
-| `first_order.json` | Fitted/theoretical first-order comparisons and integration settings |
-| `shared_closures.json` | General tau/phi closure candidates and removed columns |
-| `second_order_results.json`, `second_order_archives/` | All second-order candidates, thesis archives, and optional flux archives |
-| `*.png` | Optional plots generated after numerical reporting |
-| `COMPLETE` or `FAILED` | Execution outcome for the requested stages |
-
-An abrupt scheduler termination can leave status `running` without either
-marker; consult the Slurm log. COMPLETE means the requested stages executed,
-not that a model met a scientific accuracy criterion. Reports use training
-data, distinguish inferred simulation configuration from confirmed provenance,
-and do not designate a thesis-selected model. Inspect errors and their change
-with filter scale before treating a run as scientifically successful.
-
-All scientific code and archive construction stay in
-`COnvection-FILTER-Copy2.ipynb`. The Python launcher executes `pace:*` tagged cells
-directly, so notebook fixes automatically apply to the batch workflow. Save the
-notebook before submission or interactive archiving. Local scientific execution
-is intentionally excluded by the repository instructions; run verification on
-PACE.
-
-## Equivalence and paper accuracy
-
-The current batch workflow shares the current notebook code, but the notebook
-is not fully equivalent to the historical version: the homogeneous/AIC searches
-were removed, targeted recovery replaced numeric anchors, and numerical settings
-changed. See [NOTEBOOK_EQUIVALENCE.md](NOTEBOOK_EQUIVALENCE.md) for the full audit.
-The older Dedalus simulation batch scripts are unchanged.
-
-Flux archives now include the paper's equations (3.8)–(3.9) accuracy A for the
-closure and its flux, plus the integrated mean-flux ratio. Pearson correlation
-remains a separate diagnostic. With `--plots`, each run also saves
-`paper_accuracy.png`. After a sweep completes, use the same analysis environment:
+Running Python directly processes **one scale**, in the foreground of an allocated
+PACE compute session:
 
 ```bash
-python run_filter_sweep.py --compare-runs /path/to/scratch/filter_verification
+python -u run_filter_sweep.py --delta-dx 50 --workers 32 --plots
 ```
 
-This creates a unique comparison directory containing
-`accuracy_vs_filter_scale.png`, CSV values, and a JSON report. It performs no new
-filtering or regression. Use a dedicated output root per sweep, with one complete
-run per scale and matching data/settings. Old archives without A are skipped;
-their flux cells must be rerun to generate this metric.
+## What each scale runs
 
-By default, curves compare the fitted/theoretical first-order baselines against
-Delta/dx. Add `--include-corrections` to plot correction candidates as well.
-Add `--reference-length LENGTH` to plot Delta/LENGTH, with LENGTH expressed in
-the same physical units as the saved coordinates. No paper length scale is
-inferred from the convection data. Different filter widths retain different
-vertical interiors after wall-support trimming; account for this when comparing
-curves.
+- Original homogeneous AIC `max_k=5..39` and jump `max_k=10` searches. The broad
+  library includes continuity, momentum with tau, and heat transport with phi.
+  Recovery is judged from equations and residuals, not assumed.
+- General tau trace/STF and phi discoveries, requesting up to six terms including
+  the forced target.
+- Six original experiments: scalar column 31 (combinatorial), vector column 85
+  (power), vector column 22 (combinatorial), scalar column 56 (combinatorial),
+  scalar column 45 (power and combinatorial). Printed term names identify these
+  original numerical targets. Column 22's invalid six-term request with max_k=5
+  is archived as skipped; valid requests run with their original settings.
+- Prescribed gradient calibration, theoretical Delta^2/12 comparison, and
+  original residual searches for both baselines.
+- Pi_tau = -S_ij tau_ij and Pi_phi = -phi_i d_i bbar, with S the symmetric resolved
+  velocity gradient. Here b is the simulation's temperature-like scalar.
+  General, fitted-gradient, and theoretical-gradient models use common spatial
+  support within each run, including corrections and all trace/STF pairings.
+- Paper accuracy A for closures and fluxes, mean-flux ratios, relative errors,
+  correlations, and transfer-sign statistics. No best model is selected.
+
+`--plots` saves final plotting cells as PNGs. Without it, numerical reports and
+flux arrays are still archived. Original plot indices and zoom selections are
+preserved and require a sufficiently large input window/grid.
+
+## Plot multiple filter widths
+
+After the array completes:
+
+```bash
+python run_filter_sweep.py --compare-runs "$OUTPUT_ROOT"
+```
+
+This reads completed restored-workflow archives and writes a unique comparison
+directory with `accuracy_vs_filter_scale.png`, CSV, and JSON. Curves include all
+general discoveries and uncorrected fitted/theoretical gradients. Add
+`--include-corrections` for residual corrections. `--reference-length L` uses
+Delta/L on the horizontal axis; otherwise it uses Delta/dx.
+
+Use one run per scale with the same inputs/settings. Earlier workflow archives
+are skipped; duplicate scales or mixed settings are rejected. Candidates are
+independently fitted at each width, so their term support may change.
+
+## Explicitly reduced runs
+
+Overrides include `--homogeneous-max-k`, `--closure-max-terms`,
+`--maximum-correction-terms`, `--domains`, `--domain-width`, `--domain-time`,
+`--time-start`, `--time-stop`, and `--alpha`. These change the run and are archived.
+
+- `--skip-inhomogeneous-experiments` omits numerical-target experiments.
+- `--skip-baseline-residuals` (alias `--skip-second-order`) omits gradient calibration
+  and residual searches; general discovery and its flux analysis still run.
+- `--skip-flux` omits flux evaluation.
+
+Combinatorial searches and the broad homogeneous sweep can be expensive. A reduced
+execution check is possible, but is not equivalent to the complete run:
+
+```bash
+sbatch --array=0-0 slurm/run_filter_sweep.sbatch --homogeneous-max-k 5 --domains 64 --time-stop 80 --skip-inhomogeneous-experiments --maximum-correction-terms 1 --skip-flux
+```
+
+## Archives and status
+
+Each execution has a unique directory with `execution.json`, the executed notebook
+snapshot, cell timings, and `COMPLETE` or `FAILED`. Exceptions include a traceback.
+Caught errors from the original homogeneous sweep prevent successful completion.
+
+Notebook archives contain returned candidate equations, coefficients and errors,
+baseline choices, settings, integrated libraries, coordinates, input identity,
+Git revision/status, source snapshots, and inferred Dedalus source parameters.
+Historical simulation provenance remains explicitly unconfirmed. Training fits
+and random weak-row splits are not labeled independent validation or thesis
+selections. Flux archives include definitions, candidate IDs, arrays, JSON/CSV,
+and optional plots. Previous archives are preserved.
+
+Only static parsing and source inspection were performed locally. Numerical
+execution and resource requirements must be checked on PACE.
