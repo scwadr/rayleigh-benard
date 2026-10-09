@@ -41,6 +41,11 @@ retained. The separate TODO fixes have not been silently applied.
   mean-flux ratios (plus relative errors). Per-frame snapshots, correlations, and
   transfer-sign diagnostics were removed. This changes the diagnostic implementation,
   not the discovery searches or fitted coefficients.
+- Flux evaluation uses concurrent spatial tiles with halos, sharing input fields
+  read-only and caching derivatives and contracted terms per tile. Point-count
+  weighting preserves the full-grid average; all times and candidates are retained.
+  Only reduction order changes. Batch timings/cache statistics and the executed
+  flux cell source are archived separately from the earlier discovery provenance.
 - Both prescribed gradient/gradient-plus-Hessian models and fitted/theoretical
   baselines with discovered residual corrections are evaluated on common support.
   Phi uses the analogous Gaussian scalar-flux expansion; the paper's stress result

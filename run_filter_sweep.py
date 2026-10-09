@@ -42,7 +42,9 @@ def parse_args():
     parser.add_argument('--skip-baseline-residuals', '--skip-second-order', dest='skip_baseline_residuals', action='store_true', help='Omit gradient calibration/residual searches; general discovery and prescribed first/second-order flux benchmarks remain')
     parser.add_argument('--skip-flux', action='store_true', help='Skip pointwise flux diagnostics')
     parser.add_argument('--flux-batch-size', type=int, default=8, help='Frames per vectorized flux batch; all frames contribute to the paper averages')
-    parser.add_argument('--flux-cache-mib', type=int, default=256, help='Bounded derivative cache per flux batch in MiB')
+    parser.add_argument('--flux-cache-mib', type=int, default=256, help='Derivative and term cache budget per active spatial tile in MiB')
+    parser.add_argument('--flux-tile-size', type=int, default=64, help='Spatial tile width; all grid points are included')
+    parser.add_argument('--flux-workers', type=int, help='Concurrent flux tile threads (default: up to 8 allocated/configured CPUs)')
     parser.add_argument('--flux-include-general', action='store_true', help='Also evaluate general shared-library candidates; default focuses on first/second-order comparisons')
     parser.add_argument('--plots', action='store_true', help='Save the final plotting cells using Agg')
     return parser.parse_args()
@@ -74,7 +76,7 @@ def run_notebook(args):
         raise RuntimeError('Vendored SPIDER uses Python 3.12 syntax; activate its PACE environment')
     for name in ('delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'alpha',
                  'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms',
-                 'flux_batch_size', 'flux_cache_mib'):
+                 'flux_batch_size', 'flux_cache_mib', 'flux_tile_size', 'flux_workers'):
         if getattr(args, name) is not None and not getattr(args, name) > 0:
             raise ValueError(f'{name} must be positive')
     if args.homogeneous_max_k is not None and args.homogeneous_max_k < 5:
@@ -100,7 +102,7 @@ def run_notebook(args):
     config = {name: getattr(args, name) for name in (
         'delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'time_start', 'time_stop',
         'alpha', 'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms',
-        'flux_batch_size', 'flux_cache_mib', 'flux_include_general')
+        'flux_batch_size', 'flux_cache_mib', 'flux_include_general', 'flux_tile_size', 'flux_workers')
         if getattr(args, name) is not None}
     config['baseline_residuals'] = not args.skip_baseline_residuals
     config.update(output_root=str(output_root), run_dir=str(job_dir))

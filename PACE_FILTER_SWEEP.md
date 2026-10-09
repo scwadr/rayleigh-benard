@@ -105,13 +105,44 @@ The flux cell now accumulates only the moments needed for those accuracies, mean
 flux ratios, and relative errors. All times are retained with trapezoidal weights;
 there is no silent time subsampling or averaging of individual-frame accuracies.
 
-Spatial derivatives are shared between candidates within batches of eight frames,
-with a bounded 256 MiB derivative cache. Trace/STF pair metrics use orthogonality
-and scalar flux cross moments, avoiding full tensor reconstruction for every pair.
-`--flux-batch-size N` and `--flux-cache-mib N` tune temporary memory/performance;
-they do not change the averaging window. Total working memory also includes input
-fields and candidate batches, beyond the derivative cache. Runtime must still be
-measured on PACE; this does not guarantee the complete discovery job fits eight hours.
+The grid is divided into 64-by-64 spatial tiles with eight-point halos, retaining
+every interior point. Up to eight allocated/configured CPUs process tiles with
+threads sharing the existing input arrays, in batches of eight times. Derivatives
+and contracted terms are cached per tile and reused across candidates/families.
+This avoids whole-grid cache thrashing: a single 4096-by-1536-by-8 float64 derivative
+is 384 MiB before cropping, larger than the old 256 MiB cache. A default tile plus
+halo needs about 0.39 MiB per derivative. Sparse coefficient plans are built once,
+so inactive library columns do not add Python loops for every tile.
+
+Trace/STF pair metrics still use orthogonality and scalar flux cross moments.
+Tile moments are weighted by their retained point counts, including partial edge
+tiles, to recover the same full-grid spatial average. All times, models and
+coefficients are retained; only floating-point summation order changes.
+The centered derivative stencils have the same spacing and accuracy as before,
+and tile halos keep artificial tile boundaries outside the retained interior.
+
+`--flux-tile-size N`, `--flux-workers N`, `--flux-batch-size N`, and
+`--flux-cache-mib N` tune execution without changing the averaging window or grid.
+The cache budget is per active tile/worker and includes derivative and term arrays;
+total memory also includes input fields and candidate workspaces. Progress reports
+tile counts, batch timings, cache hits and evictions, also saved in `flux.json`.
+Runtime still needs measurement on PACE; no eight-hour completion guarantee is made.
+
+### Continue in an existing notebook kernel
+
+Interrupt the old flux cell without restarting the kernel. With discovery and
+its archive already in memory, update execution controls directly:
+
+```python
+run_controls = dict(run_controls)
+run_controls.update(flux_tile_size=64, flux_batch_size=8, flux_cache_mib=256)
+```
+
+Run the updated flux calculation, flux archive, and flux plot cells (30, 31, 38,
+counting Markdown). Do not rerun setup, cropping, filtering, or regression.
+`flux_workers` defaults to up to eight available CPUs; explicitly set it only
+within the allocated CPU count. New flux archives preserve the earlier discovery
+archive and capture the actual executed flux cell source when available.
 
 Both model sets have explicit labels:
 
