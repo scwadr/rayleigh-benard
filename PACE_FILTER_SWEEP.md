@@ -6,7 +6,9 @@ implementation and archiving remain in the notebook. See the
 
 ## Complete notebook run
 
-On PACE, restart the kernel and run all cells from the top. The default filter
+On PACE, run preparation/discovery/archive cells from the top, then the single
+replacement flux cell (`dc5ac1e7`, currently cell 32 counting Markdown). Skip the
+two legacy flux cells (30 and 31); they remain only for historical reference. The default filter
 width is **Delta/dx=50**. The order is:
 
 1. Imports, controls, loading, filtering, measured tau/phi, and library integration.
@@ -14,8 +16,9 @@ width is **Delta/dx=50**. The order is:
 3. General tau and phi discovery from the original shared library.
 4. Consolidated original inhomogeneous regression experiments.
 5. Fitted/theoretical gradient comparisons and residual discovery.
-6. Discovery archive, flux evaluation, and flux archive.
-7. Original diagnostic plots and new flux plots.
+6. Discovery archive, then the replacement cell combining tiled flux evaluation,
+   flux archiving and optional single-width plots.
+7. Optional original diagnostic plots for interactive notebook use only.
 
 The last cell compares archived scales only when `SWEEP_COMPARE_CONFIG` is set.
 Otherwise it does nothing. Do not rerun the crop cell alone: like the original,
@@ -38,22 +41,34 @@ is Delta/sqrt(12). Each task requests 32 CPUs, all node memory, and eight hours.
 These requests have not been benchmarked for the restored broad searches; adjust
 wall time as needed. Existing account/QOS/node constraints remain in the Slurm file.
 
-By default, all run archives and plots go into unique per-scale directories under
-`/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/`, outside the repository.
-The runner creates this directory as needed. This is also the default for direct
-Python runs. To group a particular sweep separately, set this before submission:
+Input defaults to `/storage/scratch1/2/ashelestov3/preprocessed_paper_data.npz`.
+Every array gets a unique directory:
 
-```bash
-export OUTPUT_ROOT=/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/restored_sweep_01
+```text
+/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/sweep_<array-job-id>/
 ```
 
-`sbatch` returns immediately. Logs are
+Each width has its own timestamped run/archive directory inside it. Temporary
+files, Python bytecode, JAX caches, Matplotlib caches, archives and figures all go
+to scratch. Source code is read from the checkout. `DATA_PATH`/`--data-path` and
+`OUTPUT_ROOT`/`--output-root` may override paths **only within this scratch root**;
+old home/repository overrides fail explicitly. `OUTPUT_ROOT` is a parent directory:
+the launcher always adds `sweep_<array-job-id>`.
+
+One task automatically submits a small plotting job with an `afterok` dependency
+on the entire array. It reads the completed moment archives after every width
+succeeds and writes `figure2_delta_<timestamp>_<id>/` inside the sweep directory.
+`comparison_job.txt` records its Slurm ID. This happens with or without `--plots`;
+`--plots` additionally saves each width's quick flux plots. `COMPARE_SWEEP=0` or
+`--skip-flux` disables automatic comparison. Partial arrays do not auto-compare.
+
+`sbatch` returns immediately. Array logs are
 `/storage/scratch1/2/ashelestov3/rb_filter_check-<job>_<task>.out`;
-monitor with `squeue -u "$USER"`. `SPIDER_ENV` selects the conda environment.
-`DATA_PATH` and `OUTPUT_ROOT` override input/output locations. Use a dedicated
-output directory for each sweep. An already-set `OUTPUT_ROOT` still overrides the
-scratch default; unset it to use the default. Slurm logs use the existing scratch
-root because Slurm opens the log before the script can create subdirectories.
+comparison logs are `sweep_<array-job-id>/logs/figure2-<plot-job-id>.out`.
+Monitor with `squeue -u "$USER"`. `SPIDER_ENV` selects the conda environment.
+Slurm opens array logs before the script can create subdirectories, so those logs
+use the existing scratch root. Cancel an array with `scancel <array-job-id>`;
+a dependent comparison cannot run if any required task fails or is canceled.
 
 To change scales, change both the list and array range:
 
@@ -66,7 +81,7 @@ Running Python directly processes **one scale**, in the foreground of an allocat
 PACE compute session:
 
 ```bash
-python -u run_filter_sweep.py --delta-dx 50 --workers 32 --plots
+python -u run_filter_sweep.py --delta-dx 50 --workers 32 --flux-workers 32 --plots
 ```
 
 ## What each scale runs
@@ -92,9 +107,9 @@ python -u run_filter_sweep.py --delta-dx 50 --workers 32 --plots
   errors. No best model is selected. General shared-library candidates are still
   discovered and archived; their flux evaluation is optional (`--flux-include-general`).
 
-`--plots` saves final plotting cells as PNGs. Without it, numerical reports and
-integrated flux moments are still archived. Original plot indices and zoom selections are
-preserved and require a sufficiently large input window/grid.
+`--plots` saves the replacement cell's per-width flux figures. Legacy plotting
+cells are excluded from batch execution. Numerical reports and integrated moments
+are archived whether or not `--plots` is supplied.
 
 ## Batched Figure 2 diagnostics
 
@@ -106,8 +121,8 @@ flux ratios, and relative errors. All times are retained with trapezoidal weight
 there is no silent time subsampling or averaging of individual-frame accuracies.
 
 The grid is divided into 64-by-64 spatial tiles with eight-point halos, retaining
-every interior point. Up to eight allocated/configured CPUs process tiles with
-threads sharing the existing input arrays, in batches of eight times. Derivatives
+every interior point. The batch launcher uses all 32 allocated CPUs for tiles,
+with threads sharing the existing input arrays, in batches of eight times. Derivatives
 and contracted terms are cached per tile and reused across candidates/families.
 This avoids whole-grid cache thrashing: a single 4096-by-1536-by-8 float64 derivative
 is 384 MiB before cropping, larger than the old 256 MiB cache. A default tile plus
@@ -138,11 +153,12 @@ run_controls = dict(run_controls)
 run_controls.update(flux_tile_size=64, flux_batch_size=8, flux_cache_mib=256)
 ```
 
-Run the updated flux calculation, flux archive, and flux plot cells (30, 31, 38,
-counting Markdown). Do not rerun setup, cropping, filtering, or regression.
-`flux_workers` defaults to up to eight available CPUs; explicitly set it only
-within the allocated CPU count. New flux archives preserve the earlier discovery
-archive and capture the actual executed flux cell source when available.
+Run only the replacement cell (`dc5ac1e7`, cell 32 counting Markdown), which
+calculates and archives fluxes and makes optional per-width plots. Skip the two
+old flux cells. Do not rerun setup, cropping, filtering, or regression. The live
+kernel keeps its existing `analysis_run_dir`; the new scratch default applies to
+new runs. Explicit execution controls are preserved rather than overwritten.
+New archives preserve earlier results and capture the executed flux source.
 
 Both model sets have explicit labels:
 
@@ -162,27 +178,41 @@ Hessians/library derivatives use sixth-order finite differences on the common in
 
 ## Plot multiple filter widths
 
-After the array completes:
+The array submits this automatically. To replot existing results without any
+filtering, fitting, or flux computation, submit the archive-only job explicitly:
 
 ```bash
-python run_filter_sweep.py --compare-runs "${OUTPUT_ROOT:-/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps}"
+sbatch slurm/plot_filter_sweep.sbatch --compare-runs /storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/sweep_<array-job-id>
 ```
 
-This reads completed schema-4 flux archives without rerunning any diagnostics.
-It writes separate `accuracy_vs_filter_scale_tau.png` and
-`accuracy_vs_filter_scale_phi.png` figures (also PDF), plus CSV and JSON, in a
-unique comparison directory. Each figure has the three Figure 2 rows: closure
-accuracy, local-flux accuracy, and mean modeled/reference flux versus filter width.
-Prescribed first/second-order models, uncorrected baselines, and discovered
-corrections with matching requested trace/STF budgets are included by default.
-Add `--include-corrections` to also plot mixed-budget pairs; all pair metrics are
-archived regardless. This is a plotting convention, not error-based model selection.
-`--reference-length L` uses Delta/L; otherwise the axis is explicitly Delta/dx,
-not the paper's Delta/integral-scale normalization.
+Use the actual numeric array ID in that path. At least two completed widths are
+required. The comparison verifies the archived moments, time weights and JSON
+metrics, then produces color-coded paper-style line plots with three rows:
+closure accuracy, flux accuracy, and mean modeled/reference flux. The default
+x-axis is physical **Delta**, not correction count or Delta/dx. Supply
+`--reference-length L` to the plotting job for Delta/L, or set `REFERENCE_LENGTH`
+before submitting an array. No integral length is inferred.
 
-Use one run per scale with the same inputs/settings. Earlier workflow archives
-are skipped; duplicate scales or mixed settings are rejected. Candidates are
-independently fitted at each width, so their term support may change.
+Separate tau and phi figures are saved for each available matched correction
+budget: `figure2_tau_N1_vs_delta.png`, `figure2_phi_N1_vs_delta.png`, etc., also
+PDF and SVG. Each figure holds N fixed and compares the theoretical baseline plus
+N corrections, prescribed gradient plus Hessian, fitted gradient, fitted baseline
+plus N corrections, and prescribed gradient. Tau pairs use N corrections for each
+trace/STF fit. Colors, line styles and three-panel layout follow the next-cell
+analysis; markers show evaluated widths. Missing/undefined values leave gaps;
+axis limits expand to retain values outside the paper's displayed range.
+
+`--correction-budgets 1 3 5` restricts the comparison figures. Every candidate,
+including mixed trace/STF budgets, remains in `metrics.csv` and source snapshots.
+`analysis.json`, `analysis.txt`, the executed analysis source and hashed copies of
+the small source archives accompany each unique plot directory. This selects no
+best candidate. `--include-corrections` is retained as a compatibility flag;
+matched corrections are now included by default. Prescribed-only runs also plot.
+
+Use one run per width with the same inputs/settings. Earlier schemas and incomplete
+runs are skipped; duplicate widths or mixed settings are rejected. Automatic
+comparisons additionally require every requested width. Candidates are fitted
+independently at each width; term support and original fit cropping may change.
 
 ## Explicitly reduced runs
 
