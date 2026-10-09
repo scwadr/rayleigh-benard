@@ -25,7 +25,9 @@ def parse_args():
     parser.add_argument('--reference-length', type=float, help='Physical reference length for comparison x axis; otherwise use Delta/dx')
     parser.add_argument('--include-corrections', action='store_true', help='Include independently refitted correction candidates in comparison curves')
     parser.add_argument('--data-path')
-    parser.add_argument('--output-root', default='thesis_runs')
+    parser.add_argument('--output-root',
+                        default=os.environ.get('OUTPUT_ROOT', '/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps'),
+                        help='Run archive root (default: OUTPUT_ROOT or the PACE scratch filter_sweeps directory)')
     parser.add_argument('--workers', type=int, default=int(os.environ['SLURM_CPUS_PER_TASK']) if 'SLURM_CPUS_PER_TASK' in os.environ else None)
     parser.add_argument('--domains', type=int, help='Explicit override; otherwise retain original domain-count formulas')
     parser.add_argument('--domain-width', type=int)

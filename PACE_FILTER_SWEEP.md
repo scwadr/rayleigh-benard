@@ -30,7 +30,6 @@ scientific defaults apply. Gradient comparisons run by default.
 Use the existing Python 3.12+ SPIDER environment on PACE. From the repository:
 
 ```bash
-export OUTPUT_ROOT="$PWD/thesis_runs/restored_sweep_01"
 sbatch slurm/run_filter_sweep.sbatch --plots
 ```
 
@@ -39,10 +38,22 @@ is Delta/sqrt(12). Each task requests 32 CPUs, all node memory, and eight hours.
 These requests have not been benchmarked for the restored broad searches; adjust
 wall time as needed. Existing account/QOS/node constraints remain in the Slurm file.
 
-`sbatch` returns immediately. Logs are `rb_filter_check-<job>_<task>.out`;
+By default, all run archives and plots go into unique per-scale directories under
+`/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/`, outside the repository.
+The runner creates this directory as needed. This is also the default for direct
+Python runs. To group a particular sweep separately, set this before submission:
+
+```bash
+export OUTPUT_ROOT=/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/restored_sweep_01
+```
+
+`sbatch` returns immediately. Logs are
+`/storage/scratch1/2/ashelestov3/rb_filter_check-<job>_<task>.out`;
 monitor with `squeue -u "$USER"`. `SPIDER_ENV` selects the conda environment.
 `DATA_PATH` and `OUTPUT_ROOT` override input/output locations. Use a dedicated
-output directory for each sweep.
+output directory for each sweep. An already-set `OUTPUT_ROOT` still overrides the
+scratch default; unset it to use the default. Slurm logs use the existing scratch
+root because Slurm opens the log before the script can create subdirectories.
 
 To change scales, change both the list and array range:
 
@@ -88,7 +99,7 @@ preserved and require a sufficiently large input window/grid.
 After the array completes:
 
 ```bash
-python run_filter_sweep.py --compare-runs "$OUTPUT_ROOT"
+python run_filter_sweep.py --compare-runs "${OUTPUT_ROOT:-/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps}"
 ```
 
 This reads completed restored-workflow archives and writes a unique comparison

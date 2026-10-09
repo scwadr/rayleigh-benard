@@ -10,7 +10,7 @@
 #SBATCH --mem=0
 #SBATCH --time=08:00:00
 #SBATCH --array=0-3%1
-#SBATCH --output=%x-%A_%a.out
+#SBATCH --output=/storage/scratch1/2/ashelestov3/%x-%A_%a.out
 
 set -euo pipefail
 module load anaconda3
@@ -34,4 +34,4 @@ srun --ntasks=1 python -u run_filter_sweep.py \
     --delta-dx "${scales[$task]}" \
     --workers "$SLURM_CPUS_PER_TASK" \
     --data-path "${DATA_PATH:-/storage/scratch1/2/ashelestov3/preprocessed_paper_data.npz}" \
-    --output-root "${OUTPUT_ROOT:-thesis_runs}" "$@"
+    --output-root "${OUTPUT_ROOT:-/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps}" "$@"
