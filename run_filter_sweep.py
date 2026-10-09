@@ -12,9 +12,34 @@ import multiprocessing
 import os
 from pathlib import Path
 import sys
+import tempfile
 import time
 import traceback
 from uuid import uuid4
+
+SCRATCH_ROOT = Path('/storage/scratch1/2/ashelestov3')
+DEFAULT_OUTPUT_ROOT = SCRATCH_ROOT / 'rayleigh-benard' / 'filter_sweeps'
+
+
+def scratch_path(value):
+    """Keep run data, archives and comparison output off the home filesystem."""
+    path = Path(value).expanduser().resolve()
+    if not path.is_relative_to(SCRATCH_ROOT.resolve()):
+        raise ValueError(f'Use a path under {SCRATCH_ROOT}, not {path}; clear stale DATA_PATH/OUTPUT_ROOT overrides')
+    return path
+
+
+def scratch_runtime(root):
+    """Redirect Python, plotting, JAX and temporary-file caches to scratch."""
+    runtime = root / 'runtime'
+    for variable, name in (('MPLCONFIGDIR', 'matplotlib'), ('XDG_CACHE_HOME', 'cache'),
+                           ('JAX_COMPILATION_CACHE_DIR', 'jax'), ('TMPDIR', 'tmp'),
+                           ('PYTHONPYCACHEPREFIX', 'pycache')):
+        directory = runtime / name
+        directory.mkdir(parents=True, exist_ok=True)
+        os.environ[variable] = str(directory)
+    sys.pycache_prefix = os.environ['PYTHONPYCACHEPREFIX']
+    tempfile.tempdir = os.environ['TMPDIR']
 
 
 def parse_args():
@@ -22,12 +47,14 @@ def parse_args():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--delta-dx', type=float, help='Gaussian delta in raw x grid spacings')
     mode.add_argument('--compare-runs', help='Plot Figure 2 metrics versus width from completed batched flux archives under this root')
-    parser.add_argument('--reference-length', type=float, help='Physical reference length for comparison x axis; otherwise use Delta/dx')
-    parser.add_argument('--include-corrections', action='store_true', help='Also plot mixed trace/STF correction budgets (matched budgets are plotted by default)')
-    parser.add_argument('--data-path')
+    parser.add_argument('--reference-length', type=float, help='Plot Delta/L using this reference length; otherwise plot physical Delta')
+    parser.add_argument('--include-corrections', action='store_true', help='Compatibility flag: matched correction budgets are now all plotted by default')
+    parser.add_argument('--expected-scales', type=float, nargs='+', help='Comparison requires exactly these completed Delta/dx values')
+    parser.add_argument('--correction-budgets', type=int, nargs='+', help='Comparison budgets to plot; default: every available matched positive budget')
+    parser.add_argument('--data-path', default=os.environ.get('DATA_PATH', str(SCRATCH_ROOT / 'preprocessed_paper_data.npz')))
     parser.add_argument('--output-root',
-                        default=os.environ.get('OUTPUT_ROOT', '/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps'),
-                        help='Run archive root (default: OUTPUT_ROOT or the PACE scratch filter_sweeps directory)')
+                        default=os.environ.get('OUTPUT_ROOT', str(DEFAULT_OUTPUT_ROOT)),
+                        help='Scratch run archive root; the Slurm launcher adds a unique sweep_<array-job> directory')
     parser.add_argument('--workers', type=int, default=int(os.environ['SLURM_CPUS_PER_TASK']) if 'SLURM_CPUS_PER_TASK' in os.environ else None)
     parser.add_argument('--domains', type=int, help='Explicit override; otherwise retain original domain-count formulas')
     parser.add_argument('--domain-width', type=int)
@@ -46,13 +73,14 @@ def parse_args():
     parser.add_argument('--flux-tile-size', type=int, default=64, help='Spatial tile width; all grid points are included')
     parser.add_argument('--flux-workers', type=int, help='Concurrent flux tile threads (default: up to 8 allocated/configured CPUs)')
     parser.add_argument('--flux-include-general', action='store_true', help='Also evaluate general shared-library candidates; default focuses on first/second-order comparisons')
-    parser.add_argument('--plots', action='store_true', help='Save the final plotting cells using Agg')
+    parser.add_argument('--plots', action='store_true', help='Save single-scale flux plots; Slurm also submits the Delta-comparison job automatically')
     return parser.parse_args()
 
 
 def compare_runs(args):
     """Execute only the notebook's archive-comparison plotting cell."""
-    root = str(Path(args.compare_runs).resolve())
+    root = str(scratch_path(args.compare_runs))
+    scratch_runtime(Path(root) / ('comparison_runtime_' + uuid4().hex[:8]))
     repo = Path(__file__).resolve().parent
     os.chdir(repo)
     os.environ['MPLBACKEND'] = 'Agg'
@@ -64,14 +92,17 @@ def compare_runs(args):
         raise RuntimeError('Expected one notebook sweep-comparison cell')
     namespace = globals()
     namespace['SWEEP_COMPARE_CONFIG'] = dict(root=root, reference_length=args.reference_length,
-                                            include_corrections=args.include_corrections)
+        expected_scales=args.expected_scales, correction_budgets=args.correction_budgets)
     source = ''.join(cells[0]['source'])
-    exec(compile(source, f'{notebook_path}::cell::{cells[0]["id"]}', 'exec'), namespace)
+    filename = f'{notebook_path}::cell::{cells[0]["id"]}'
+    linecache.cache[filename] = (len(source), None, source.splitlines(True), filename)
+    exec(compile(source, filename, 'exec'), namespace)
 
 
 def run_notebook(args):
-    if args.reference_length is not None or args.include_corrections:
-        raise ValueError('--reference-length and --include-corrections require --compare-runs')
+    if (args.reference_length is not None or args.include_corrections
+            or args.expected_scales is not None or args.correction_budgets is not None):
+        raise ValueError('Comparison options require --compare-runs')
     if sys.version_info < (3, 12):
         raise RuntimeError('Vendored SPIDER uses Python 3.12 syntax; activate its PACE environment')
     for name in ('delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'alpha',
@@ -85,8 +116,10 @@ def run_notebook(args):
         raise ValueError('Invalid time window')
     repo = Path(__file__).resolve().parent
     # Resolve user paths before switching to the repo for source provenance.
-    output_root = Path(args.output_root).resolve()
-    data_path = str(Path(args.data_path).resolve()) if args.data_path else None
+    output_root = scratch_path(args.output_root)
+    data_path = str(scratch_path(args.data_path))
+    if not Path(data_path).is_file():
+        raise FileNotFoundError(f'Preprocessed input is missing: {data_path}')
     os.chdir(repo)
     os.environ['MPLBACKEND'] = 'Agg'
     os.environ.setdefault('OMP_NUM_THREADS', '1')
@@ -99,13 +132,14 @@ def run_notebook(args):
     job_dir = output_root / (created.strftime('%Y%m%dT%H%M%S.%fZ')
                             + f'_delta_dx_{args.delta_dx:g}_' + uuid4().hex[:8])
     job_dir.mkdir(parents=True, exist_ok=False)
+    scratch_runtime(job_dir)
     config = {name: getattr(args, name) for name in (
         'delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'time_start', 'time_stop',
         'alpha', 'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms',
         'flux_batch_size', 'flux_cache_mib', 'flux_include_general', 'flux_tile_size', 'flux_workers')
         if getattr(args, name) is not None}
     config['baseline_residuals'] = not args.skip_baseline_residuals
-    config.update(output_root=str(output_root), run_dir=str(job_dir))
+    config.update(output_root=str(output_root), run_dir=str(job_dir), single_scale_plots=args.plots)
     if data_path:
         config['data_path'] = data_path
     notebook_path = repo / 'COnvection-FILTER-Copy2.ipynb'
@@ -114,7 +148,7 @@ def run_notebook(args):
     (job_dir / 'executed_notebook.ipynb').write_bytes(content)
     manifest = dict(created_utc=created.isoformat(), status='running', config=config,
         notebook_sha256=hashlib.sha256(content).hexdigest(),
-        workflow='restored original notebook',
+        workflow='notebook discovery plus single replacement tiled-flux cell',
         requested=dict(baseline_residuals=not args.skip_baseline_residuals,
                        numeric_target_experiments=not args.skip_inhomogeneous_experiments,
                        flux=not args.skip_flux, plots=args.plots), cells=[])
@@ -125,8 +159,11 @@ def run_notebook(args):
         allowed.add('inhomogeneous')
     if not args.skip_flux:
         allowed.add('flux')
-    if args.plots:
-        allowed.add('plot')
+    flux_cells = [cell for cell in notebook['cells'] if 'pace:flux' in cell.get('metadata', {}).get('tags', [])]
+    if len(flux_cells) != 1 or flux_cells[0]['id'] != 'dc5ac1e7':
+        raise RuntimeError('Expected only the successful replacement cell dc5ac1e7 in the batch flux stage')
+    manifest['excluded_cells'] = ['flux_cells', 'flux_archive']
+    manifest['plot_policy'] = 'replacement-cell flux plots only; legacy diagnostic plot cells are not batch stages'
     print('Run directory:', job_dir, flush=True)
     # Real module globals keep notebook-defined functions picklable by SPIDER's
     # worker processes. The __main__ guard prevents relaunch on multiprocessing spawn.
@@ -154,27 +191,7 @@ def run_notebook(args):
             linecache.cache[filename] = (len(source), None, source.splitlines(True), filename)
             print(f'Executing {record["stage"]}: {cell["id"]}', flush=True)
             started = time.monotonic()
-            if stages[0] == 'plot':
-                import matplotlib.pyplot as plt
-                plot_dir = job_dir / 'plots'
-                plot_dir.mkdir(exist_ok=True)
-                original_show = plt.show
-                figure_count = [0]
-
-                def save_shown_figures(*unused_args, **unused_kwargs):
-                    for number in plt.get_fignums():
-                        figure_count[0] += 1
-                        plt.figure(number).savefig(
-                            plot_dir / f'{cell["id"]}_{figure_count[0]:02d}.png', dpi=150)
-                    plt.close('all')
-
-                plt.show = save_shown_figures
-                try:
-                    exec(compile(source, filename, 'exec'), namespace)
-                finally:
-                    plt.show = original_show
-            else:
-                exec(compile(source, filename, 'exec'), namespace)
+            exec(compile(source, filename, 'exec'), namespace)
             record.update(status='complete', seconds=time.monotonic()-started)
             save_manifest()
         executed = {r['stage'] for r in manifest['cells'] if r['status'] == 'complete'}
