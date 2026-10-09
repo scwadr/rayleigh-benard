@@ -36,11 +36,19 @@ retained. The separate TODO fixes have not been silently applied.
   blocks are removed. Stale saved outputs are cleared.
 - Run controls, result capture, source snapshots, provenance, and unique archives
   remain notebook cells. The temporary homogeneous-regression script is deleted.
-- Flux diagnostics evaluate general discoveries, fitted gradient models,
-  theoretical gradient models, and their residual corrections on common support
-  within each run. Every trace/STF pairing is retained; no best model is selected.
-- Paper accuracy A from equations (3.8)-(3.9) is retained for closures and fluxes,
-  alongside mean-flux ratios, errors, correlations, and transfer signs.
+- Flux diagnostics now batch all times and accumulate the moments for paper
+  equations (3.8)-(3.9) and Figure 2: closure accuracy, local-flux accuracy, and
+  mean-flux ratios (plus relative errors). Per-frame snapshots, correlations, and
+  transfer-sign diagnostics were removed. This changes the diagnostic implementation,
+  not the discovery searches or fitted coefficients.
+- Both prescribed gradient/gradient-plus-Hessian models and fitted/theoretical
+  baselines with discovered residual corrections are evaluated on common support.
+  Phi uses the analogous Gaussian scalar-flux expansion; the paper's stress result
+  is not represented as scalar-model validation. General-discovery flux evaluation
+  is opt-in; all general discovery results remain in the discovery archives.
+  Every trace/STF pairing is retained numerically; default comparison curves use
+  matching requested budgets, without error-based model selection. Earlier flux
+  archives are preserved and not mixed with the new schema-4 comparisons.
 
 Core stress, phi, crop, library, and phi-discovery call cells were compared
 directly against the restoration source. Other scientific cells have runtime

@@ -85,14 +85,49 @@ python -u run_filter_sweep.py --delta-dx 50 --workers 32 --plots
   original residual searches for both baselines.
 - Pi_tau = -S_ij tau_ij and Pi_phi = -phi_i d_i bbar, with S the symmetric resolved
   velocity gradient. Here b is the simulation's temperature-like scalar.
-  General, fitted-gradient, and theoretical-gradient models use common spatial
-  support within each run, including corrections and all trace/STF pairings.
-- Paper accuracy A for closures and fluxes, mean-flux ratios, relative errors,
-  correlations, and transfer-sign statistics. No best model is selected.
+  First-order gradient and second-order gradient-plus-Hessian prescribed models
+  are compared with fitted/theoretical baselines and discovered residual corrections.
+  All use common spatial support within each run. Every trace/STF pairing is archived.
+- Paper accuracy A for closures and local fluxes, mean-flux ratios, and relative
+  errors. No best model is selected. General shared-library candidates are still
+  discovered and archived; their flux evaluation is optional (`--flux-include-general`).
 
 `--plots` saves final plotting cells as PNGs. Without it, numerical reports and
-flux arrays are still archived. Original plot indices and zoom selections are
+integrated flux moments are still archived. Original plot indices and zoom selections are
 preserved and require a sufficiently large input window/grid.
+
+## Batched Figure 2 diagnostics
+
+Paper equations **(3.8)-(3.9)** require spatial/component contractions integrated
+over time, followed by one magnitude-aware accuracy ratio. They do not require
+per-frame accuracy plots, full flux snapshots, Pearson correlations, or sign sweeps.
+The flux cell now accumulates only the moments needed for those accuracies, mean
+flux ratios, and relative errors. All times are retained with trapezoidal weights;
+there is no silent time subsampling or averaging of individual-frame accuracies.
+
+Spatial derivatives are shared between candidates within batches of eight frames,
+with a bounded 256 MiB derivative cache. Trace/STF pair metrics use orthogonality
+and scalar flux cross moments, avoiding full tensor reconstruction for every pair.
+`--flux-batch-size N` and `--flux-cache-mib N` tune temporary memory/performance;
+they do not change the averaging window. Total working memory also includes input
+fields and candidate batches, beyond the derivative cache. Runtime must still be
+measured on PACE; this does not guarantee the complete discovery job fits eight hours.
+
+Both model sets have explicit labels:
+
+- **Prescribed first order:** gradient contraction with coefficient Delta^2/12.
+- **Prescribed second order:** first order plus Hessian contraction with
+  coefficient Delta^4/288, including both mixed-derivative contributions.
+- **Fitted/theoretical first order:** the notebook's frozen gradient baseline.
+- **Discovered residual-corrected:** that baseline plus each returned correction.
+  These corrections are not assumed to equal the prescribed Hessian term.
+
+For tau, the prescribed formulas are paper equations (3.1)-(3.4). For phi, use
+the analogous Gaussian scalar-flux expansion, contracting velocity derivatives
+with scalar derivatives. The paper studies stress; it does not establish this
+scalar extension as an empirical result. Derivative conventions are archived:
+first gradients retain the fitted baseline's `numpy.gradient` convention, and
+Hessians/library derivatives use sixth-order finite differences on the common interior.
 
 ## Plot multiple filter widths
 
@@ -102,11 +137,17 @@ After the array completes:
 python run_filter_sweep.py --compare-runs "${OUTPUT_ROOT:-/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps}"
 ```
 
-This reads completed restored-workflow archives and writes a unique comparison
-directory with `accuracy_vs_filter_scale.png`, CSV, and JSON. Curves include all
-general discoveries and uncorrected fitted/theoretical gradients. Add
-`--include-corrections` for residual corrections. `--reference-length L` uses
-Delta/L on the horizontal axis; otherwise it uses Delta/dx.
+This reads completed schema-4 flux archives without rerunning any diagnostics.
+It writes separate `accuracy_vs_filter_scale_tau.png` and
+`accuracy_vs_filter_scale_phi.png` figures (also PDF), plus CSV and JSON, in a
+unique comparison directory. Each figure has the three Figure 2 rows: closure
+accuracy, local-flux accuracy, and mean modeled/reference flux versus filter width.
+Prescribed first/second-order models, uncorrected baselines, and discovered
+corrections with matching requested trace/STF budgets are included by default.
+Add `--include-corrections` to also plot mixed-budget pairs; all pair metrics are
+archived regardless. This is a plotting convention, not error-based model selection.
+`--reference-length L` uses Delta/L; otherwise the axis is explicitly Delta/dx,
+not the paper's Delta/integral-scale normalization.
 
 Use one run per scale with the same inputs/settings. Earlier workflow archives
 are skipped; duplicate scales or mixed settings are rejected. Candidates are
@@ -120,7 +161,8 @@ Overrides include `--homogeneous-max-k`, `--closure-max-terms`,
 
 - `--skip-inhomogeneous-experiments` omits numerical-target experiments.
 - `--skip-baseline-residuals` (alias `--skip-second-order`) omits gradient calibration
-  and residual searches; general discovery and its flux analysis still run.
+  and residual searches; general discovery still runs, and prescribed first/second-order
+  flux benchmarks remain. Add `--flux-include-general` for general-candidate fluxes.
 - `--skip-flux` omits flux evaluation.
 
 Combinatorial searches and the broad homogeneous sweep can be expensive. A reduced
@@ -141,8 +183,11 @@ baseline choices, settings, integrated libraries, coordinates, input identity,
 Git revision/status, source snapshots, and inferred Dedalus source parameters.
 Historical simulation provenance remains explicitly unconfirmed. Training fits
 and random weak-row splits are not labeled independent validation or thesis
-selections. Flux archives include definitions, candidate IDs, arrays, JSON/CSV,
-and optional plots. Previous archives are preserved.
+selections. Flux archives include definitions, explicit prescribed coefficients,
+candidate IDs, JSON/CSV, optional plots, and `flux_moments.npz` with coordinates,
+all time weights, and sufficient moments to reproduce every reported metric.
+Per-frame flux arrays/time series are no longer written. Previous archives are preserved;
+old schema-3 flux archives are not mixed with the revised comparisons.
 
 Only static parsing and source inspection were performed locally. Numerical
 execution and resource requirements must be checked on PACE.

@@ -21,9 +21,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--delta-dx', type=float, help='Gaussian delta in raw x grid spacings')
-    mode.add_argument('--compare-runs', help='Plot paper accuracy versus width from completed flux archives under this root')
+    mode.add_argument('--compare-runs', help='Plot Figure 2 metrics versus width from completed batched flux archives under this root')
     parser.add_argument('--reference-length', type=float, help='Physical reference length for comparison x axis; otherwise use Delta/dx')
-    parser.add_argument('--include-corrections', action='store_true', help='Include independently refitted correction candidates in comparison curves')
+    parser.add_argument('--include-corrections', action='store_true', help='Also plot mixed trace/STF correction budgets (matched budgets are plotted by default)')
     parser.add_argument('--data-path')
     parser.add_argument('--output-root',
                         default=os.environ.get('OUTPUT_ROOT', '/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps'),
@@ -39,8 +39,11 @@ def parse_args():
     parser.add_argument('--closure-max-terms', type=int)
     parser.add_argument('--maximum-correction-terms', type=int)
     parser.add_argument('--skip-inhomogeneous-experiments', action='store_true', help='Skip the consolidated original numeric-target experiments')
-    parser.add_argument('--skip-baseline-residuals', '--skip-second-order', dest='skip_baseline_residuals', action='store_true', help='Explicitly omit prescribed gradient comparisons/residual searches; general discovery and flux remain')
+    parser.add_argument('--skip-baseline-residuals', '--skip-second-order', dest='skip_baseline_residuals', action='store_true', help='Omit gradient calibration/residual searches; general discovery and prescribed first/second-order flux benchmarks remain')
     parser.add_argument('--skip-flux', action='store_true', help='Skip pointwise flux diagnostics')
+    parser.add_argument('--flux-batch-size', type=int, default=8, help='Frames per vectorized flux batch; all frames contribute to the paper averages')
+    parser.add_argument('--flux-cache-mib', type=int, default=256, help='Bounded derivative cache per flux batch in MiB')
+    parser.add_argument('--flux-include-general', action='store_true', help='Also evaluate general shared-library candidates; default focuses on first/second-order comparisons')
     parser.add_argument('--plots', action='store_true', help='Save the final plotting cells using Agg')
     return parser.parse_args()
 
@@ -70,7 +73,8 @@ def run_notebook(args):
     if sys.version_info < (3, 12):
         raise RuntimeError('Vendored SPIDER uses Python 3.12 syntax; activate its PACE environment')
     for name in ('delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'alpha',
-                 'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms'):
+                 'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms',
+                 'flux_batch_size', 'flux_cache_mib'):
         if getattr(args, name) is not None and not getattr(args, name) > 0:
             raise ValueError(f'{name} must be positive')
     if args.homogeneous_max_k is not None and args.homogeneous_max_k < 5:
@@ -95,7 +99,8 @@ def run_notebook(args):
     job_dir.mkdir(parents=True, exist_ok=False)
     config = {name: getattr(args, name) for name in (
         'delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'time_start', 'time_stop',
-        'alpha', 'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms')
+        'alpha', 'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms',
+        'flux_batch_size', 'flux_cache_mib', 'flux_include_general')
         if getattr(args, name) is not None}
     config['baseline_residuals'] = not args.skip_baseline_residuals
     config.update(output_root=str(output_root), run_dir=str(job_dir))
