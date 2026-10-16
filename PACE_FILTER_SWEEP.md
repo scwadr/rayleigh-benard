@@ -1,6 +1,6 @@
 # Restored notebook and PACE filter sweep
 
-For the current measure-ell_i-first, five-width discovery plus prescribed-model
+For the current measure-ell_i-first, six-width discovery plus prescribed-model
 comparison, archive validation, reuse of completed fits, and paper limitations, see
 [Figure 2 audit and launch commands](FIGURE2_BENCHMARK_AUDIT.md).
 

@@ -2,41 +2,47 @@
 
 ## Current workflow: measure first, discover models, compare both families
 
-Use this workflow for the requested five-width comparison. The prescribed-only
+Use this workflow for the requested six-width comparison. The prescribed-only
 commands later in this document are optional recovery of the original sweep;
 they do **not** perform the requested model discovery.
 
 After updating the PACE checkout, measure the convection integral scale first:
 
 ```bash
-sbatch slurm/measure_li.sbatch
+bash slurm/submit_filter_workflow.sh measure
 ```
 
-The log `rb_measure_li-<job>.out` prints the completed measurement directory.
-Its `scale_plan.json` contains the measured `li`, five physical widths,
+The submission directory's `logs/rb_measure_li-*.out` prints the completed measurement directory.
+Its `scale_plan.json` contains the measured `li`, physical widths,
 `delta_dx`, and `delta_over_li`. The notebook computes the ratio of spatially
 and temporally averaged Frobenius norms in paper Eq. (3.3), using unfiltered
 velocity, sixth-order finite differences, periodic x, and a 50-point wall
 exclusion in y. It uses all selected times with trapezoidal weights. This is
 a convection adaptation, not the paper's spectral calculation on F1/F2.
 
-The default normalized widths are 0.2, 0.4, 0.6, 0.8, 1.0. If the largest
-width exceeds the current crop/support limit, all five are reduced uniformly;
-the plan records this explicitly. Widths remain equally spaced and are not
-rounded to the old grid widths. The plan, moments, input member hashes,
+The default normalized widths are **0.05, 0.2, 0.4, 0.6, 0.8, 1.0**. If the
+largest width exceeds the current crop/support limit, the five original widths
+are reduced uniformly; the extra 0.05 stays exact. Duplicate widths are removed.
+The plan records the resulting widths explicitly. No widths are rounded to the
+old grid widths. An unresolved 0.05 width or insufficient support raises an
+error rather than silently changing that requested scale. Existing measurement
+plans remain unchanged; run measurement again to create a new six-width plan.
+The plan, moments, input member hashes,
 measurement settings, and source snapshots are saved in a unique archive.
 No numerical value of `li` has been measured in the development environment.
 
 Once that job succeeds, set `PLAN` to its actual file and launch:
 
 ```bash
-PLAN=/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/li_<timestamp>_<id>/scale_plan.json
+PLAN=/absolute/scratch/path/printed/by/measurement/scale_plan.json
 OLD=/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/sweep_14094098
-sbatch --array=0-4%1 slurm/run_filter_sweep.sbatch \
-  --scale-plan "$PLAN" --discovery-benchmarks --reuse-runs "$OLD"
+bash slurm/submit_filter_workflow.sh discover \
+  --scale-plan "$PLAN" --reuse-runs "$OLD"
 ```
 
-The explicit `--array=0-4%1` is necessary for all five widths. This executes
+The helper defaults to `--array=0-5%1` for six widths. Check the printed plan;
+if support limiting deduplicated a width, set `SWEEP_ARRAY=0-4%1` instead.
+It also supports existing five-width plans with that override. Discovery mode executes
 loading/filtering, general tau/phi discovery, archiving, and flux evaluation
 for both discovered and prescribed models. It skips `second-order-regression`
 and the other frozen-baseline calibration/residual stages. That skipped cell
@@ -48,21 +54,21 @@ Completed widths 25 and 50 are preserved. If either exactly matches a planned
 width and passes compatibility/integrity checks, its saved library integrals
 and general fitted equations are reused without integration or refitting.
 The old runs did not save general-model flux metrics, so those metrics still
-require evaluation. If neither width matches, the new five widths require new
+require evaluation. If neither width matches, the new widths require new
 fits; the old widths are not relaunched or substituted into the uniform grid.
 Reused fits retain their original source/provenance archive in the new archive.
 
-After all five tasks succeed, the array automatically submits comparison.
+After all tasks succeed, the array automatically submits comparison.
 Alternatively, rerun only auditing/plotting with the new sweep directory:
 
 ```bash
-sbatch slurm/plot_filter_sweep.sbatch \
-  --compare-runs /storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/sweep_<new-job> \
+bash slurm/submit_filter_workflow.sh plot \
+  --compare-runs /absolute/scratch/path/to/the/new/sweep_JOB \
   --scale-plan "$PLAN" --discovery-benchmarks
 ```
 
 Add `--verify-only` to audit without drawing. The comparison checks the plan,
-archive consistency, all five widths, and complete discovered-model curves.
+archive consistency, all planned widths, and complete discovered-model curves.
 It produces `figure2_tau_P1_vs_delta.*` through `P5`, and equivalent phi
 figures, in PNG/PDF/SVG. Each compares discovered, prescribed gradient, and
 prescribed gradient-plus-Hessian models at a fixed requested predictor budget;
@@ -70,6 +76,50 @@ tau uses that budget separately for trace and STF. All candidates are saved,
 including unequal-budget pairs. These are exploratory training fits, not
 independently validated or thesis-selected models. The three panels show
 closure accuracy, local-flux accuracy, and mean-flux ratio against Delta/ell_i.
+
+## Launch without model discovery
+
+Use the same measured plan:
+
+```bash
+bash slurm/submit_filter_workflow.sh prescribed --scale-plan "$PLAN"
+```
+
+This computes only prescribed gradient and gradient-plus-Hessian flux benchmarks
+for both tau and phi; it performs no library integration or regression. Do not
+pass `--reuse-runs` in this mode. Each submission is separate. Choose either
+mode: discovery mode already includes the prescribed benchmarks, so submitting
+both is unnecessary unless you specifically want separate runs.
+
+## Scratch storage isolation
+
+The submission helper creates a unique directory under
+`/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/` and prints it.
+Slurm logs and the submission receipt are saved there, with measurement/sweep
+archives, bootstrap files and runtime directories beneath it. The dependent
+plot job saves its figures/audit under the sweep and its log under `logs/`.
+
+The Python runner executes from a small source snapshot in its own
+`runtime/work/` on scratch. It copies the notebook and relevant sources, not
+DNS data or `.git`. Imports use the scratch SPIDER copy. Python bytecode,
+Matplotlib, JAX, Numba, CUDA, joblib, IPython/Jupyter and XDG caches/configuration,
+and temporary files are redirected to scratch. Relative incidental output also
+lands in the scratch working directory. Git metadata is read from the original
+checkout with optional index writes disabled. The data file is read in place.
+No generated files are intentionally written to the repository or project/home
+storage. Old local `.out` files and plots are left untouched.
+
+For manual comparison submissions with logs isolated in a fresh scratch folder:
+
+```bash
+bash slurm/submit_filter_workflow.sh plot \
+  --compare-runs /absolute/scratch/path/to/sweep_JOB \
+  --scale-plan "$PLAN" --discovery-benchmarks
+```
+
+Use `--prescribed-only` instead for a prescribed-only sweep. Direct `sbatch`
+commands still use scratch, but their default bootstrap logs are at the scratch
+root; use the helper to keep those logs in a separate submission folder too.
 
 ## Relation to the paper
 
