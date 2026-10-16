@@ -43,7 +43,9 @@ sbatch slurm/run_filter_sweep.sbatch --plots
 ```
 
 The array checks **Delta/dx = 10, 25, 50, 75**, one task at a time. Gaussian sigma
-is Delta/sqrt(12). Each task requests 32 CPUs, all node memory, and eight hours.
+is Delta/sqrt(12). Each task requests 64 AMD CPUs on one node, all node memory,
+and eight hours. The AMD constraint, account and QOS match `slurm/paper-test`.
+One Python task uses the allocation for discovery workers and flux threads.
 These requests have not been benchmarked for the SGS discovery workflow; adjust
 wall time as needed. Existing account/QOS/node constraints remain in the Slurm file.
 
@@ -87,7 +89,7 @@ Running Python directly processes **one scale**, in the foreground of an allocat
 PACE compute session:
 
 ```bash
-python -u run_filter_sweep.py --delta-dx 50 --workers 32 --flux-workers 32 --plots
+python -u run_filter_sweep.py --delta-dx 50 --workers 64 --flux-workers 64 --plots
 ```
 
 ## What each scale runs
@@ -122,7 +124,7 @@ flux ratios, and relative errors. All times are retained with trapezoidal weight
 there is no silent time subsampling or averaging of individual-frame accuracies.
 
 The grid is divided into 64-by-64 spatial tiles with eight-point halos, retaining
-every interior point. The batch launcher uses all 32 allocated CPUs for tiles,
+every interior point. The batch launcher uses all 64 allocated CPUs for tiles,
 with threads sharing the existing input arrays, in batches of eight times. Derivatives
 and contracted terms are cached per tile and reused across candidates/families.
 This avoids whole-grid cache thrashing: a single 4096-by-1536-by-8 float64 derivative

@@ -6,7 +6,7 @@
 #SBATCH --constraint=amd
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
+#SBATCH --cpus-per-task=64
 #SBATCH --mem=0
 #SBATCH --time=08:00:00
 #SBATCH --array=0-3%1
