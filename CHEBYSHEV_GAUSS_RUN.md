@@ -52,6 +52,52 @@ second-order closure sweep.
 
 ## Install and submit
 
+### Use a Git checkout without pip
+
+This option leaves installed packages unchanged. In a PACE terminal, clone to
+a new directory, separate from the checkout used by your running sweep:
+
+```bash
+git clone --branch upstream-plus-quadrature https://github.com/pjo0213/PySPIDER.git "$HOME/PySPIDER-gauss"
+git -C "$HOME/PySPIDER-gauss" checkout --detach ccc892cdc84fb183c13531a7fa654132acbe1818
+```
+
+In a fresh Jupyter kernel, run this configuration cell **before** the recovery
+notebook's first code cell:
+
+```python
+import os
+os.environ["SPIDER_CHECKOUT"] = os.path.expanduser("~/PySPIDER-gauss")
+```
+
+Then run the recovery notebook's existing code cells in order. The first code
+cell puts this checkout's `src` directory first on this kernel's import path,
+checks the pinned commit and clean package source, and prints the actual imported
+path. The archive records the checkout and snapshots its package source. An old
+installed `PySPIDER_SR` can remain in the environment; its distribution metadata
+is not used to identify the active source checkout. Restart the kernel before
+changing source checkouts. Do not update this checkout while its jobs are running.
+
+For the batch launcher, set the same selection before submitting:
+
+```bash
+export SPIDER_CHECKOUT="$HOME/PySPIDER-gauss"
+SPIDER_PREPROCESS=1 sbatch --export=ALL slurm/paper-test/run_gauss_recovery.sbatch
+```
+
+Existing dependencies still need to be available in the kernel (Python >=3.12,
+NumPy, SciPy, z3-solver, findiff, numba-kdtree, JAX/JAXlib and h5py). This bypasses
+installation of PySPIDER itself, not its dependencies. The batch launcher also
+needs nbconvert and the `spider-gauss` kernel registration shown below. For
+interactive Jupyter, an existing compatible kernel is sufficient.
+
+You may use the existing environment for this option if its dependencies already
+work, since no installed files are changed. Keep this project's notebooks and
+output paths separate from the running sweep as well. No pip command below is
+needed when using `SPIDER_CHECKOUT`.
+
+### Alternative: install the pinned package
+
 Use PACE, from this repository root. The examples use the existing `SPIDER`
 Conda environment, Python >=3.12, and the repository's account/QOS defaults.
 Install into a separate environment if retaining an installed old pin for
@@ -68,7 +114,10 @@ python -m ipykernel install --user --name spider-gauss --display-name 'SPIDER Ga
 The environment also needs JAX/JAXlib, h5py, nbconvert and ipykernel, along with
 the fork's dependencies. `--no-deps` preserves the existing scientific stack;
 resolve missing dependencies before submitting. The notebook verifies the VCS
-commit in the installed distribution's `direct_url.json`, not just its version.
+commit in the installed distribution's `direct_url.json`, not just its version,
+and verifies that the imported package comes from that distribution.
+
+### Run the pipeline
 
 First run preprocessing and a 32-domain diagnostic:
 
