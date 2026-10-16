@@ -1,5 +1,9 @@
 # Restored notebook and PACE filter sweep
 
+For prescribed-only convection benchmarks, archive validation, reuse of completed
+widths, and the differences from the paper's actual Figure 2, see
+[Figure 2 audit and launch commands](FIGURE2_BENCHMARK_AUDIT.md).
+
 The runner executes tagged cells from `COnvection-FILTER-Copy2.ipynb`. Scientific
 implementation and archiving remain in the notebook. See the
 [restoration record](NOTEBOOK_EQUIVALENCE.md) for the source comparison.
@@ -13,8 +17,8 @@ not the batch execution order. The launch command is unchanged.
 ## Complete notebook run
 
 On PACE, run preparation/discovery/archive cells from the top, then the single
-replacement flux cell (`dc5ac1e7`, currently cell 32 counting Markdown). Skip the
-two legacy flux cells (30 and 31); they remain only for historical reference. The default filter
+replacement flux cell (`dc5ac1e7`, currently cell 33 counting Markdown). Skip the
+two legacy flux cells (31 and 32); they remain only for historical reference. The default filter
 width is **Delta/dx=50**. The order is:
 
 1. Imports, controls, loading, filtering, measured tau/phi, and library integration.
@@ -156,7 +160,7 @@ run_controls = dict(run_controls)
 run_controls.update(flux_tile_size=64, flux_batch_size=8, flux_cache_mib=256)
 ```
 
-Run only the replacement cell (`dc5ac1e7`, cell 32 counting Markdown), which
+Run only the replacement cell (`dc5ac1e7`, cell 33 counting Markdown), which
 calculates and archives fluxes and makes optional per-width plots. Skip the two
 old flux cells. Do not rerun setup, cropping, filtering, or regression. The live
 kernel keeps its existing `analysis_run_dir`; the new scratch default applies to
