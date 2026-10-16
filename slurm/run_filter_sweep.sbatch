@@ -55,10 +55,9 @@ read -r -a scales <<< "${FILTER_SCALES:-10 25 50 75}"
 if [[ -n "$scale_plan" ]]; then
     scale_plan="$(realpath "$scale_plan")"
     # Scientific widths are resolved/validated from the plan by the Python runner.
-    scales=(0 1 2 3 4)
+    # Read the number of widths after activating Python below.
 fi
 task="${SLURM_ARRAY_TASK_ID:-0}"
-(( task < ${#scales[@]} )) || { echo "No filter scale for array index $task" >&2; exit 1; }
 sweep_id="${SLURM_ARRAY_JOB_ID:-$SLURM_JOB_ID}"
 sweep_root="$output_parent/sweep_$sweep_id"
 runtime="$sweep_root/runtime/task_$task"
@@ -71,6 +70,11 @@ export PYTHONPYCACHEPREFIX="$runtime/pycache" JAX_COMPILATION_CACHE_DIR="$runtim
 module load anaconda3
 source activate "${SPIDER_ENV:-SPIDER}"
 cd "$REPO_ROOT"
+if [[ -n "$scale_plan" ]]; then
+    count="$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["delta_dx"]))' "$scale_plan")"
+    mapfile -t scales < <(seq 0 "$((count-1))")
+fi
+(( task < ${#scales[@]} )) || { echo "No filter scale for array index $task" >&2; exit 1; }
 
 echo "Sweep directory: $sweep_root"
 scale_args=(--delta-dx "${scales[$task]}")

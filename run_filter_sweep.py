@@ -48,8 +48,8 @@ def parse_args():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--delta-dx', type=float, help='Gaussian delta in raw x grid spacings')
     mode.add_argument('--compare-runs', help='Plot Figure 2 metrics versus width from completed batched flux archives under this root')
-    mode.add_argument('--measure-li', action='store_true', help='Measure paper Eq. (3.3) on unfiltered velocity and archive a five-width plan; no filtering or regression')
-    mode.add_argument('--scale-index', type=int, help='Run one of the five widths from --scale-plan (indices 0 through 4)')
+    mode.add_argument('--measure-li', action='store_true', help='Measure paper Eq. (3.3); archive five equally spaced widths plus Delta/li=0.05')
+    mode.add_argument('--scale-index', type=int, help='Run a zero-based width index from --scale-plan (normally 0 through 5)')
     parser.add_argument('--scale-plan', help='Completed scale_plan.json from --measure-li; supplies widths, data/time identity and reference length')
     parser.add_argument('--li-wall-margin', type=int, default=50, help='Fixed number of raw y points excluded at each wall when measuring li (default: 50)')
     parser.add_argument('--max-delta-li', type=float, default=1., help='Upper normalized width for the five-point plan, capped by available filter-support interior')
@@ -105,8 +105,8 @@ def apply_scale_plan(args):
         args.reference_length = plan['li']
         args.expected_scales = plan['delta_dx']
     elif args.scale_index is not None:
-        if args.scale_index not in range(5):
-            raise ValueError('Scale index must be between 0 and 4')
+        if args.scale_index not in range(len(plan['delta_dx'])):
+            raise ValueError('Scale index is outside the archived plan')
         if (args.data_path != str(SCRATCH_ROOT / 'preprocessed_paper_data.npz')
                 and str(scratch_path(args.data_path)) != plan['data']['path']):
             raise ValueError('Data override conflicts with scale plan')
