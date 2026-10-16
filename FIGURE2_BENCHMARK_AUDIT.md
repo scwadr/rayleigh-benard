@@ -1,5 +1,78 @@
 # Figure 2 audit and reuse of sweep 14094098
 
+## Current workflow: measure first, discover models, compare both families
+
+Use this workflow for the requested five-width comparison. The prescribed-only
+commands later in this document are optional recovery of the original sweep;
+they do **not** perform the requested model discovery.
+
+After updating the PACE checkout, measure the convection integral scale first:
+
+```bash
+sbatch slurm/measure_li.sbatch
+```
+
+The log `rb_measure_li-<job>.out` prints the completed measurement directory.
+Its `scale_plan.json` contains the measured `li`, five physical widths,
+`delta_dx`, and `delta_over_li`. The notebook computes the ratio of spatially
+and temporally averaged Frobenius norms in paper Eq. (3.3), using unfiltered
+velocity, sixth-order finite differences, periodic x, and a 50-point wall
+exclusion in y. It uses all selected times with trapezoidal weights. This is
+a convection adaptation, not the paper's spectral calculation on F1/F2.
+
+The default normalized widths are 0.2, 0.4, 0.6, 0.8, 1.0. If the largest
+width exceeds the current crop/support limit, all five are reduced uniformly;
+the plan records this explicitly. Widths remain equally spaced and are not
+rounded to the old grid widths. The plan, moments, input member hashes,
+measurement settings, and source snapshots are saved in a unique archive.
+No numerical value of `li` has been measured in the development environment.
+
+Once that job succeeds, set `PLAN` to its actual file and launch:
+
+```bash
+PLAN=/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/li_<timestamp>_<id>/scale_plan.json
+OLD=/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/sweep_14094098
+sbatch --array=0-4%1 slurm/run_filter_sweep.sbatch \
+  --scale-plan "$PLAN" --discovery-benchmarks --reuse-runs "$OLD"
+```
+
+The explicit `--array=0-4%1` is necessary for all five widths. This executes
+loading/filtering, general tau/phi discovery, archiving, and flux evaluation
+for both discovered and prescribed models. It skips `second-order-regression`
+and the other frozen-baseline calibration/residual stages. That skipped cell
+does discover additive residual corrections; it is separate from general
+model discovery and is unnecessary for these comparisons. General discovery
+keeps the existing SPIDER power initializer that completed at every old width.
+
+Completed widths 25 and 50 are preserved. If either exactly matches a planned
+width and passes compatibility/integrity checks, its saved library integrals
+and general fitted equations are reused without integration or refitting.
+The old runs did not save general-model flux metrics, so those metrics still
+require evaluation. If neither width matches, the new five widths require new
+fits; the old widths are not relaunched or substituted into the uniform grid.
+Reused fits retain their original source/provenance archive in the new archive.
+
+After all five tasks succeed, the array automatically submits comparison.
+Alternatively, rerun only auditing/plotting with the new sweep directory:
+
+```bash
+sbatch slurm/plot_filter_sweep.sbatch \
+  --compare-runs /storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/sweep_<new-job> \
+  --scale-plan "$PLAN" --discovery-benchmarks
+```
+
+Add `--verify-only` to audit without drawing. The comparison checks the plan,
+archive consistency, all five widths, and complete discovered-model curves.
+It produces `figure2_tau_P1_vs_delta.*` through `P5`, and equivalent phi
+figures, in PNG/PDF/SVG. Each compares discovered, prescribed gradient, and
+prescribed gradient-plus-Hessian models at a fixed requested predictor budget;
+tau uses that budget separately for trace and STF. All candidates are saved,
+including unequal-budget pairs. These are exploratory training fits, not
+independently validated or thesis-selected models. The three panels show
+closure accuracy, local-flux accuracy, and mean-flux ratio against Delta/ell_i.
+
+## Relation to the paper
+
 The local paper `2D_Incompressible_SGS_Paper_2 (44).pdf`, pages 3–9,
 defines Figure 2(a), (b), and (c) as velocity flows F1, F2, and F3. They
 are not stress and scalar-flux panels. F1 has inverse-cascade initial
@@ -41,7 +114,7 @@ The comparison labels the results as convection stress/scalar flux and
 records these limitations in `analysis.txt`. Matching formulas and archive
 integrity are not independent numerical validation of the computed fields.
 
-## Filter scales
+## Original sweep filter scales
 
 The logs give dx=0.0009765625. The requested scales therefore are:
 
@@ -102,7 +175,7 @@ simulation provenance. Input identity in these archives is path/stat plus
 coordinates, not a full hash of the original fields. Only the downloaded
 logs are available locally, so the PACE archive checks have not been run here.
 
-## Finish only missing widths, preserving successful runs
+## Optional prescribed-only recovery of the original four widths
 
 This guarded submission launches tasks 0 and 3 (widths 10 and 75) only
 after the two existing archives pass verification:

@@ -1,7 +1,7 @@
 # Restored notebook and PACE filter sweep
 
-For prescribed-only convection benchmarks, archive validation, reuse of completed
-widths, and the differences from the paper's actual Figure 2, see
+For the current measure-ell_i-first, five-width discovery plus prescribed-model
+comparison, archive validation, reuse of completed fits, and paper limitations, see
 [Figure 2 audit and launch commands](FIGURE2_BENCHMARK_AUDIT.md).
 
 The runner executes tagged cells from `COnvection-FILTER-Copy2.ipynb`. Scientific
@@ -12,13 +12,14 @@ Batch execution runs tau/phi model discovery, fitted/theoretical coefficient
 comparisons, residual discovery, and flux analysis. It excludes broad homogeneous
 PDE recovery and the six legacy numerical-target experiments. Those cells remain
 available for interactive notebook runs; the complete notebook order below is
-not the batch execution order. The launch command is unchanged.
+not the batch execution order. The new `--discovery-benchmarks` mode retains
+general discovery and skips the optional frozen-baseline residual searches.
 
 ## Complete notebook run
 
 On PACE, run preparation/discovery/archive cells from the top, then the single
-replacement flux cell (`dc5ac1e7`, currently cell 33 counting Markdown). Skip the
-two legacy flux cells (31 and 32); they remain only for historical reference. The default filter
+replacement flux cell (`dc5ac1e7`). Skip the two legacy flux cells;
+they remain only for historical reference. The default filter
 width is **Delta/dx=50**. The order is:
 
 1. Imports, controls, loading, filtering, measured tau/phi, and library integration.
@@ -30,8 +31,9 @@ width is **Delta/dx=50**. The order is:
    flux archiving and optional single-width plots.
 7. Optional original diagnostic plots for interactive notebook use only.
 
-The last cell compares archived scales only when `SWEEP_COMPARE_CONFIG` is set.
-Otherwise it does nothing. Do not rerun the crop cell alone: like the original,
+The `filter-sweep-comparison` cell compares archived scales only when
+`SWEEP_COMPARE_CONFIG` is set; `measure-integral-scale` measures ell_i only when
+`LI_CONFIG` is set. Otherwise they do nothing. Do not rerun the crop cell alone: like the original,
 it crops arrays in place. Start from loading for a new filter width.
 
 For optional overrides, define `RUN_CONFIG` before the controls cell, for example
