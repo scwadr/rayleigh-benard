@@ -67,9 +67,14 @@ export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NUMEXPR_NUM_TH
 export MPLBACKEND=Agg PYTHONUNBUFFERED=1
 export TMPDIR="$runtime/tmp" MPLCONFIGDIR="$runtime/matplotlib" XDG_CACHE_HOME="$runtime/cache"
 export PYTHONPYCACHEPREFIX="$runtime/pycache" JAX_COMPILATION_CACHE_DIR="$runtime/cache/jax"
+mkdir -p "$runtime/numba" "$runtime/joblib" "$runtime/cuda" "$runtime/config" "$runtime/state" "$runtime/data"
+export NUMBA_CACHE_DIR="$runtime/numba" JOBLIB_TEMP_FOLDER="$runtime/joblib" CUDA_CACHE_PATH="$runtime/cuda"
+export XDG_CONFIG_HOME="$runtime/config" XDG_STATE_HOME="$runtime/state" XDG_DATA_HOME="$runtime/data"
+export TMP="$TMPDIR" TEMP="$TMPDIR" GIT_OPTIONAL_LOCKS=0
+cd "$runtime"
 module load anaconda3
 source activate "${SPIDER_ENV:-SPIDER}"
-cd "$REPO_ROOT"
+cd "$runtime"
 if [[ -n "$scale_plan" ]]; then
     count="$(python -c 'import json,sys; print(len(json.load(open(sys.argv[1]))["delta_dx"]))' "$scale_plan")"
     mapfile -t scales < <(seq 0 "$((count-1))")
@@ -84,7 +89,7 @@ if [[ -n "$scale_plan" ]]; then
 else
     echo "Job $SLURM_JOB_ID task $task: Delta/dx=${scales[$task]}, workers=$SLURM_CPUS_PER_TASK"
 fi
-srun --ntasks=1 python -u run_filter_sweep.py \
+srun --ntasks=1 python -u "$REPO_ROOT/run_filter_sweep.py" \
     --workers "$SLURM_CPUS_PER_TASK" --flux-workers "$SLURM_CPUS_PER_TASK" \
     "${runner_args[@]}" \
     "${scale_args[@]}" --data-path "$data_path" --output-root "$sweep_root"

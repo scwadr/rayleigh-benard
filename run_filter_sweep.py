@@ -12,6 +12,7 @@ import linecache
 import multiprocessing
 import os
 from pathlib import Path
+import shutil
 import sys
 import tempfile
 import time
@@ -32,15 +33,42 @@ def scratch_path(value):
 
 def scratch_runtime(root):
     """Redirect Python, plotting, JAX and temporary-file caches to scratch."""
-    runtime = root / 'runtime'
+    runtime = scratch_path(root) / 'runtime'
     for variable, name in (('MPLCONFIGDIR', 'matplotlib'), ('XDG_CACHE_HOME', 'cache'),
                            ('JAX_COMPILATION_CACHE_DIR', 'jax'), ('TMPDIR', 'tmp'),
-                           ('PYTHONPYCACHEPREFIX', 'pycache')):
+                           ('PYTHONPYCACHEPREFIX', 'pycache'), ('NUMBA_CACHE_DIR', 'numba'),
+                           ('JOBLIB_TEMP_FOLDER', 'joblib'), ('CUDA_CACHE_PATH', 'cuda'),
+                           ('XDG_CONFIG_HOME', 'config'), ('XDG_DATA_HOME', 'data'),
+                           ('XDG_STATE_HOME', 'state'), ('IPYTHONDIR', 'ipython'),
+                           ('JUPYTER_RUNTIME_DIR', 'jupyter')):
         directory = runtime / name
         directory.mkdir(parents=True, exist_ok=True)
         os.environ[variable] = str(directory)
     sys.pycache_prefix = os.environ['PYTHONPYCACHEPREFIX']
     tempfile.tempdir = os.environ['TMPDIR']
+    os.environ['TMP'] = os.environ['TMPDIR']
+    os.environ['TEMP'] = os.environ['TMPDIR']
+    os.environ['GIT_OPTIONAL_LOCKS'] = '0'
+
+
+def scratch_working_copy(root, source):
+    """Run from small source snapshots on scratch; never copy data or .git."""
+    scratch_runtime(root)
+    work = scratch_path(root) / 'runtime' / 'work'
+    work.mkdir(parents=True, exist_ok=False)
+    files = [source / name for name in ('COnvection-FILTER-Copy2.ipynb',
+             'prepare-numpy-files-interpolate.ipynb', 'run_filter_sweep.py')]
+    files += list((source / 'SPIDER').rglob('*.py'))
+    files += list((source / 'dedalus' / 'paper-test').glob('*.py'))
+    files += list((source / 'slurm').glob('*.sbatch'))
+    for path in files:
+        destination = work / path.relative_to(source)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(path, destination)
+    globals()['SOURCE_REPO'] = str(source)
+    sys.path.insert(0, str(work))
+    os.chdir(work)
+    return work
 
 
 def parse_args():
@@ -135,8 +163,7 @@ def measure_li(args):
         raise ValueError('Require li-wall-margin >= 3 and 0 < max-delta-li <= 1')
     root = output / ('li_' + datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ') + '_' + uuid4().hex[:8])
     root.mkdir(parents=True, exist_ok=False)
-    scratch_runtime(root)
-    os.chdir(repo)
+    repo = scratch_working_copy(root, repo)
     content = (repo / 'COnvection-FILTER-Copy2.ipynb').read_bytes()
     notebook = json.loads(content)
     (root / 'executed_notebook.ipynb').write_bytes(content)
@@ -162,9 +189,8 @@ def measure_li(args):
 def compare_runs(args):
     """Execute only the notebook's archive-comparison plotting cell."""
     root = str(scratch_path(args.compare_runs))
-    scratch_runtime(Path(root) / ('comparison_runtime_' + uuid4().hex[:8]))
     repo = Path(__file__).resolve().parent
-    os.chdir(repo)
+    repo = scratch_working_copy(Path(root) / ('comparison_runtime_' + uuid4().hex[:8]), repo)
     os.environ['MPLBACKEND'] = 'Agg'
     notebook_path = repo / 'COnvection-FILTER-Copy2.ipynb'
     notebook = json.loads(notebook_path.read_bytes())
@@ -205,12 +231,11 @@ def run_notebook(args):
     if args.time_start < 0 or (args.time_stop is not None and args.time_stop <= args.time_start):
         raise ValueError('Invalid time window')
     repo = Path(__file__).resolve().parent
-    # Resolve user paths before switching to the repo for source provenance.
+    # Resolve input paths before switching to the isolated scratch working copy.
     output_root = scratch_path(args.output_root)
     data_path = str(scratch_path(args.data_path))
     if not Path(data_path).is_file():
         raise FileNotFoundError(f'Preprocessed input is missing: {data_path}')
-    os.chdir(repo)
     os.environ['MPLBACKEND'] = 'Agg'
     os.environ.setdefault('OMP_NUM_THREADS', '1')
     os.environ.setdefault('OPENBLAS_NUM_THREADS', '1')
@@ -222,7 +247,7 @@ def run_notebook(args):
     job_dir = output_root / (created.strftime('%Y%m%dT%H%M%S.%fZ')
                             + f'_delta_dx_{args.delta_dx:g}_' + uuid4().hex[:8])
     job_dir.mkdir(parents=True, exist_ok=False)
-    scratch_runtime(job_dir)
+    repo = scratch_working_copy(job_dir, repo)
     config = {name: getattr(args, name) for name in (
         'delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'time_start', 'time_stop',
         'alpha', 'closure_max_terms', 'maximum_correction_terms',
