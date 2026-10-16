@@ -1,7 +1,8 @@
-"""Execute tagged discovery notebook cells for one PACE filter-scale task.
+"""Execute notebook SGS discovery, coefficient checks and flux analysis on PACE.
 
 Scientific implementation and run archiving live in the notebook. This launcher
 only selects cells, supplies configuration, and records execution/failure status.
+Broad PDE recovery and legacy numerical-target experiments are notebook-only.
 """
 import argparse
 from datetime import datetime, timezone
@@ -62,10 +63,9 @@ def parse_args():
     parser.add_argument('--time-start', type=int, default=0)
     parser.add_argument('--time-stop', type=int)
     parser.add_argument('--alpha', type=float)
-    parser.add_argument('--homogeneous-max-k', type=int, help='Explicit upper limit for original AIC sweep (default 39)')
     parser.add_argument('--closure-max-terms', type=int)
     parser.add_argument('--maximum-correction-terms', type=int)
-    parser.add_argument('--skip-inhomogeneous-experiments', action='store_true', help='Skip the consolidated original numeric-target experiments')
+    parser.add_argument('--skip-inhomogeneous-experiments', action='store_true', help='Compatibility flag: legacy numeric-target experiments are always excluded')
     parser.add_argument('--skip-baseline-residuals', '--skip-second-order', dest='skip_baseline_residuals', action='store_true', help='Omit gradient calibration/residual searches; general discovery and prescribed first/second-order flux benchmarks remain')
     parser.add_argument('--skip-flux', action='store_true', help='Skip pointwise flux diagnostics')
     parser.add_argument('--flux-batch-size', type=int, default=8, help='Frames per vectorized flux batch; all frames contribute to the paper averages')
@@ -106,12 +106,10 @@ def run_notebook(args):
     if sys.version_info < (3, 12):
         raise RuntimeError('Vendored SPIDER uses Python 3.12 syntax; activate its PACE environment')
     for name in ('delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'alpha',
-                 'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms',
+                 'closure_max_terms', 'maximum_correction_terms',
                  'flux_batch_size', 'flux_cache_mib', 'flux_tile_size', 'flux_workers'):
         if getattr(args, name) is not None and not getattr(args, name) > 0:
             raise ValueError(f'{name} must be positive')
-    if args.homogeneous_max_k is not None and args.homogeneous_max_k < 5:
-        raise ValueError('The original homogeneous AIC sweep starts at max_k=5')
     if args.time_start < 0 or (args.time_stop is not None and args.time_stop <= args.time_start):
         raise ValueError('Invalid time window')
     repo = Path(__file__).resolve().parent
@@ -135,10 +133,11 @@ def run_notebook(args):
     scratch_runtime(job_dir)
     config = {name: getattr(args, name) for name in (
         'delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'time_start', 'time_stop',
-        'alpha', 'homogeneous_max_k', 'closure_max_terms', 'maximum_correction_terms',
+        'alpha', 'closure_max_terms', 'maximum_correction_terms',
         'flux_batch_size', 'flux_cache_mib', 'flux_include_general', 'flux_tile_size', 'flux_workers')
         if getattr(args, name) is not None}
     config['baseline_residuals'] = not args.skip_baseline_residuals
+    config.update(homogeneous_recovery=False, numeric_target_experiments=False)
     config.update(output_root=str(output_root), run_dir=str(job_dir), single_scale_plots=args.plots)
     if data_path:
         config['data_path'] = data_path
@@ -148,21 +147,22 @@ def run_notebook(args):
     (job_dir / 'executed_notebook.ipynb').write_bytes(content)
     manifest = dict(created_utc=created.isoformat(), status='running', config=config,
         notebook_sha256=hashlib.sha256(content).hexdigest(),
-        workflow='notebook discovery plus single replacement tiled-flux cell',
-        requested=dict(baseline_residuals=not args.skip_baseline_residuals,
-                       numeric_target_experiments=not args.skip_inhomogeneous_experiments,
+        workflow='SGS discovery, coefficient verification and tiled flux analysis; no broad PDE recovery or legacy experiments',
+        requested=dict(homogeneous_recovery=False, closures=True,
+                       baseline_residuals=not args.skip_baseline_residuals,
+                       numeric_target_experiments=False,
                        flux=not args.skip_flux, plots=args.plots), cells=[])
-    allowed = {'setup', 'library', 'homogeneous', 'closures', 'archive'}
+    allowed = {'setup', 'library', 'closures', 'archive'}
     if not args.skip_baseline_residuals:
         allowed.add('baseline_residuals')
-    if not args.skip_inhomogeneous_experiments:
-        allowed.add('inhomogeneous')
     if not args.skip_flux:
         allowed.add('flux')
     flux_cells = [cell for cell in notebook['cells'] if 'pace:flux' in cell.get('metadata', {}).get('tags', [])]
     if len(flux_cells) != 1 or flux_cells[0]['id'] != 'dc5ac1e7':
         raise RuntimeError('Expected only the successful replacement cell dc5ac1e7 in the batch flux stage')
-    manifest['excluded_cells'] = ['flux_cells', 'flux_archive']
+    manifest['excluded_cells'] = [cell['id'] for cell in notebook['cells']
+        if any(tag in {'pace:homogeneous', 'pace:inhomogeneous', 'pace:flux_legacy'}
+               for tag in cell.get('metadata', {}).get('tags', []))]
     manifest['plot_policy'] = 'replacement-cell flux plots only; legacy diagnostic plot cells are not batch stages'
     print('Run directory:', job_dir, flush=True)
     # Real module globals keep notebook-defined functions picklable by SPIDER's
@@ -197,11 +197,6 @@ def run_notebook(args):
         executed = {r['stage'] for r in manifest['cells'] if r['status'] == 'complete'}
         if not allowed <= executed:
             raise RuntimeError(f'Missing requested notebook stages: {allowed-executed}')
-        if namespace.get('legacy_regression_failures'):
-            manifest.update(status='finished_with_errors',
-                            regression_failures=namespace['legacy_regression_failures'])
-            save_manifest()
-            raise RuntimeError('Original homogeneous sweep caught errors; see archived failures')
         manifest.update(status='complete', validation_status='execution succeeded; scientific errors require review')
         save_manifest()
         (job_dir / 'COMPLETE').write_text(datetime.now(timezone.utc).isoformat(), encoding='utf-8')

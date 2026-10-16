@@ -4,6 +4,12 @@ The runner executes tagged cells from `COnvection-FILTER-Copy2.ipynb`. Scientifi
 implementation and archiving remain in the notebook. See the
 [restoration record](NOTEBOOK_EQUIVALENCE.md) for the source comparison.
 
+Batch execution runs tau/phi model discovery, fitted/theoretical coefficient
+comparisons, residual discovery, and flux analysis. It excludes broad homogeneous
+PDE recovery and the six legacy numerical-target experiments. Those cells remain
+available for interactive notebook runs; the complete notebook order below is
+not the batch execution order. The launch command is unchanged.
+
 ## Complete notebook run
 
 On PACE, run preparation/discovery/archive cells from the top, then the single
@@ -38,7 +44,7 @@ sbatch slurm/run_filter_sweep.sbatch --plots
 
 The array checks **Delta/dx = 10, 25, 50, 75**, one task at a time. Gaussian sigma
 is Delta/sqrt(12). Each task requests 32 CPUs, all node memory, and eight hours.
-These requests have not been benchmarked for the restored broad searches; adjust
+These requests have not been benchmarked for the SGS discovery workflow; adjust
 wall time as needed. Existing account/QOS/node constraints remain in the Slurm file.
 
 Input defaults to `/storage/scratch1/2/ashelestov3/preprocessed_paper_data.npz`.
@@ -86,17 +92,12 @@ python -u run_filter_sweep.py --delta-dx 50 --workers 32 --flux-workers 32 --plo
 
 ## What each scale runs
 
-- Original homogeneous AIC `max_k=5..39` and jump `max_k=10` searches. The broad
-  library includes continuity, momentum with tau, and heat transport with phi.
-  Recovery is judged from equations and residuals, not assumed.
+- Preparation and shared-library integration. The shared library remains unchanged
+  because tau/phi discovery uses it; broad homogeneous AIC/jump searches are skipped.
 - General tau trace/STF and phi discoveries, requesting up to six terms including
   the forced target.
-- Six original experiments: scalar column 31 (combinatorial), vector column 85
-  (power), vector column 22 (combinatorial), scalar column 56 (combinatorial),
-  scalar column 45 (power and combinatorial). Printed term names identify these
-  original numerical targets. Column 22's invalid six-term request with max_k=5
-  is archived as skipped; valid requests run with their original settings.
-- Prescribed gradient calibration, theoretical Delta^2/12 comparison, and
+- The six legacy numerical-target experiments are skipped.
+- Gradient coefficient calibration, theoretical Delta^2/12 comparison, and
   original residual searches for both baselines.
 - Pi_tau = -S_ij tau_ij and Pi_phi = -phi_i d_i bbar, with S the symmetric resolved
   velocity gradient. Here b is the simulation's temperature-like scalar.
@@ -216,28 +217,31 @@ independently at each width; term support and original fit cropping may change.
 
 ## Explicitly reduced runs
 
-Overrides include `--homogeneous-max-k`, `--closure-max-terms`,
+Overrides include `--closure-max-terms`,
 `--maximum-correction-terms`, `--domains`, `--domain-width`, `--domain-time`,
 `--time-start`, `--time-stop`, and `--alpha`. These change the run and are archived.
 
-- `--skip-inhomogeneous-experiments` omits numerical-target experiments.
+- `--skip-inhomogeneous-experiments` remains a compatibility no-op: those
+  experiments are always excluded. `--homogeneous-max-k` is no longer accepted.
 - `--skip-baseline-residuals` (alias `--skip-second-order`) omits gradient calibration
   and residual searches; general discovery still runs, and prescribed first/second-order
   flux benchmarks remain. Add `--flux-include-general` for general-candidate fluxes.
 - `--skip-flux` omits flux evaluation.
 
-Combinatorial searches and the broad homogeneous sweep can be expensive. A reduced
+SGS discovery and library integration can still be expensive. A reduced
 execution check is possible, but is not equivalent to the complete run:
 
 ```bash
-sbatch --array=0-0 slurm/run_filter_sweep.sbatch --homogeneous-max-k 5 --domains 64 --time-stop 80 --skip-inhomogeneous-experiments --maximum-correction-terms 1 --skip-flux
+sbatch --array=0-0 slurm/run_filter_sweep.sbatch --domains 64 --time-stop 80 --maximum-correction-terms 1 --skip-flux
 ```
 
 ## Archives and status
 
 Each execution has a unique directory with `execution.json`, the executed notebook
 snapshot, cell timings, and `COMPLETE` or `FAILED`. Exceptions include a traceback.
-Caught errors from the original homogeneous sweep prevent successful completion.
+The execution manifest lists excluded PDE/legacy cells, and run controls explicitly
+record both stages as disabled. Empty homogeneous/legacy result lists in the
+discovery archive therefore mean not run, rather than successful equation recovery.
 
 Notebook archives contain returned candidate equations, coefficients and errors,
 baseline choices, settings, integrated libraries, coordinates, input identity,

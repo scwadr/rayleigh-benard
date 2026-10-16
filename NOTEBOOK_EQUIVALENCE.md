@@ -4,6 +4,13 @@ Restoration source: `102c126:COnvection-FILTER-Copy2.ipynb`, immediately before
 the batch refactor. The previous consolidation changed scientific defaults and
 removed searches; it was not equivalent. This restoration reverses those changes.
 
+Batch scope update: `run_filter_sweep.py` now deliberately skips homogeneous PDE
+recovery and the six legacy numerical-target experiments, as requested. The
+interactive notebook retains them. Batch execution still uses the notebook's
+shared library, tau/phi discovery, coefficient calibration and theoretical
+comparisons, residual discovery, archiving, and optimized flux analysis. Execution
+metadata records the omitted stages; batch runs are not complete notebook runs.
+
 ## Retained from the original
 
 | Part | Restored behavior |
