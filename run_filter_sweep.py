@@ -58,6 +58,8 @@ def parse_args():
     parser.add_argument('--expected-scales', type=float, nargs='+', help='Comparison requires exactly these completed Delta/dx values')
     parser.add_argument('--correction-budgets', type=int, nargs='+', help='Comparison budgets to plot; default: every available matched positive budget')
     parser.add_argument('--prescribed-only', action='store_true', help='Evaluate/compare only fixed gradient and gradient-plus-Hessian models, preserving the baseline-fit crop; no library integration or regression')
+    parser.add_argument('--discovery-benchmarks', action='store_true', help='Discover general tau/phi models and evaluate their fluxes alongside prescribed models; skip frozen-baseline residual searches')
+    parser.add_argument('--reuse-runs', help='Scratch root of completed runs to reuse matching general discovery fits; never overwrite or refit a compatible saved model')
     parser.add_argument('--verify-only', action='store_true', help='With --compare-runs, validate completed archives and write an audit without plotting or recomputing fields')
     parser.add_argument('--data-path', default=os.environ.get('DATA_PATH', str(SCRATCH_ROOT / 'preprocessed_paper_data.npz')))
     parser.add_argument('--output-root',
@@ -173,7 +175,8 @@ def compare_runs(args):
     namespace = globals()
     namespace['SWEEP_COMPARE_CONFIG'] = dict(root=root, reference_length=args.reference_length,
         expected_scales=args.expected_scales, correction_budgets=args.correction_budgets,
-        prescribed_only=args.prescribed_only, verify_only=args.verify_only)
+        prescribed_only=args.prescribed_only, discovery_benchmarks=args.discovery_benchmarks,
+        verify_only=args.verify_only)
     if args.scale_plan:
         namespace['SWEEP_COMPARE_CONFIG']['scale_plan'] = args.scale_plan
     source = ''.join(cells[0]['source'])
@@ -188,6 +191,10 @@ def run_notebook(args):
         raise ValueError('Comparison options require --compare-runs')
     if args.prescribed_only and (args.skip_flux or args.flux_include_general):
         raise ValueError('--prescribed-only requires flux evaluation and excludes general models')
+    if args.discovery_benchmarks and (args.prescribed_only or args.skip_flux):
+        raise ValueError('--discovery-benchmarks requires discovery and flux evaluation')
+    if args.reuse_runs and not args.discovery_benchmarks:
+        raise ValueError('--reuse-runs requires --discovery-benchmarks')
     if sys.version_info < (3, 12):
         raise RuntimeError('Vendored SPIDER uses Python 3.12 syntax; activate its PACE environment')
     for name in ('delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'alpha',
@@ -221,9 +228,13 @@ def run_notebook(args):
         'alpha', 'closure_max_terms', 'maximum_correction_terms',
         'flux_batch_size', 'flux_cache_mib', 'flux_include_general', 'flux_tile_size', 'flux_workers')
         if getattr(args, name) is not None}
-    config['baseline_residuals'] = not (args.skip_baseline_residuals or args.prescribed_only)
+    config['baseline_residuals'] = not (args.skip_baseline_residuals or args.prescribed_only or args.discovery_benchmarks)
     if args.prescribed_only:
         config['prescribed_only'] = True
+    if args.discovery_benchmarks:
+        config.update(discovery_benchmarks=True, flux_include_general=True)
+        if args.reuse_runs:
+            config['reuse_runs'] = str(scratch_path(args.reuse_runs))
     if args.scale_plan:
         config['scale_plan'] = args.scale_plan
         config['scale_plan_sha256'] = hashlib.sha256(Path(args.scale_plan).read_bytes()).hexdigest()
@@ -247,6 +258,8 @@ def run_notebook(args):
     allowed = {'setup', 'library', 'closures', 'archive'}
     if args.prescribed_only:
         allowed = {'setup', 'prescribed_setup', 'archive'}
+    if args.discovery_benchmarks:
+        allowed.update({'prescribed_setup', 'reuse_discovery'})
     if config['baseline_residuals']:
         allowed.add('baseline_residuals')
     if not args.skip_flux:
@@ -292,6 +305,10 @@ def run_notebook(args):
         if not allowed <= executed:
             raise RuntimeError(f'Missing requested notebook stages: {allowed-executed}')
         manifest.update(status='complete', validation_status='execution succeeded; scientific errors require review')
+        if namespace.get('reuse_archive') is not None:
+            manifest['reused_discovery'] = str(namespace['reuse_archive'])
+            manifest['execution_methods'] = dict(library_integrals='loaded from archive',
+                general_models='loaded exact archived coefficients; no refitting', flux='evaluated on filtered input fields')
         save_manifest()
         (job_dir / 'COMPLETE').write_text(datetime.now(timezone.utc).isoformat(), encoding='utf-8')
     except BaseException:
@@ -306,6 +323,8 @@ def run_notebook(args):
 
 if __name__ == '__main__':
     arguments = parse_args()
+    if arguments.prescribed_only and arguments.discovery_benchmarks:
+        raise ValueError('Choose --discovery-benchmarks or --prescribed-only, not both')
     apply_scale_plan(arguments)
     if arguments.measure_li:
         measure_li(arguments)
