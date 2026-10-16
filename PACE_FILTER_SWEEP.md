@@ -1,5 +1,9 @@
 # Restored notebook and PACE filter sweep
 
+For exact commands to launch both modes in separate scratch directories,
+failure behavior, and the output/plot directory map, see
+[the two-run PACE run sheet](PACE_TWO_RUNS.md).
+
 For the current measure-ell_i-first, six-width discovery plus prescribed-model
 comparison, archive validation, reuse of completed fits, and paper limitations, see
 [Figure 2 audit and launch commands](FIGURE2_BENCHMARK_AUDIT.md).
