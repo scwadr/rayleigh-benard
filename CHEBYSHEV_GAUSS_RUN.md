@@ -213,6 +213,26 @@ training fits; the thesis-selected set is empty. Keep the executed notebook and
 Slurm log with the archive when transferring results. NPZ hashing adds an I/O
 pass, and source/matrix snapshots require extra storage.
 
+Repeated pruning/archive execution now creates a new timestamp-plus-UUID archive
+before writing matrices. NPZ writes use exclusive creation, just like JSON.
+The new archive inherits input identity and source snapshots, records its parent,
+and separately saves the notebook currently on disk. Repeating the final
+regression cell copies its matrix checkpoints to a fresh archive, so switching
+from diagnostics to regression does not require rebuilding matrices. A changed
+domain count still requires rerunning domain/matrix construction and diagnostics.
+
+After pulling this fix into an active session, copy the updated pruning/archive
+cell and final regression cell into the open notebook without restarting its
+kernel. Run the pruning/archive cell and then the regression cell. The new code
+keeps an in-memory pre-pruning snapshot for subsequent retries. If an old kernel
+already pruned before this fix, its earlier removed columns remain in its parent
+archive; the new snapshot describes the currently available input columns.
+
+In the older implementation, a repeated archive cell could overwrite
+`matrix-original-0.npz` before failing on `terms-original-0.json`. Such an archive
+may mix attempts and must not be treated as an intact record of its first run.
+The fix prevents future overwrites but cannot restore an already replaced file.
+
 Development validation was limited to static source comparison, notebook JSON
 inspection and whitespace checks. No scientific tests or pipeline executions
 were performed locally; successful recovery remains to be demonstrated on PACE.
