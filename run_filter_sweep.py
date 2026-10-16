@@ -48,6 +48,11 @@ def parse_args():
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--delta-dx', type=float, help='Gaussian delta in raw x grid spacings')
     mode.add_argument('--compare-runs', help='Plot Figure 2 metrics versus width from completed batched flux archives under this root')
+    mode.add_argument('--measure-li', action='store_true', help='Measure paper Eq. (3.3) on unfiltered velocity and archive a five-width plan; no filtering or regression')
+    mode.add_argument('--scale-index', type=int, help='Run one of the five widths from --scale-plan (indices 0 through 4)')
+    parser.add_argument('--scale-plan', help='Completed scale_plan.json from --measure-li; supplies widths, data/time identity and reference length')
+    parser.add_argument('--li-wall-margin', type=int, default=50, help='Fixed number of raw y points excluded at each wall when measuring li (default: 50)')
+    parser.add_argument('--max-delta-li', type=float, default=1., help='Upper normalized width for the five-point plan, capped by available filter-support interior')
     parser.add_argument('--reference-length', type=float, help='Plot Delta/L using this reference length; otherwise plot physical Delta')
     parser.add_argument('--include-corrections', action='store_true', help='Compatibility flag: matched correction budgets are now all plotted by default')
     parser.add_argument('--expected-scales', type=float, nargs='+', help='Comparison requires exactly these completed Delta/dx values')
@@ -79,6 +84,79 @@ def parse_args():
     return parser.parse_args()
 
 
+def apply_scale_plan(args):
+    """Resolve an archived scientific plan; its computation lives in the notebook."""
+    if args.scale_index is not None and not args.scale_plan:
+        raise ValueError('--scale-index requires --scale-plan')
+    if not args.scale_plan:
+        return
+    path = scratch_path(args.scale_plan)
+    plan = json.loads(path.read_bytes())
+    if not (path.parent / 'COMPLETE').is_file() or plan.get('schema_version') != 1:
+        raise ValueError('Expected a completed schema-1 integral-scale plan')
+    expected_hash = json.loads((path.parent / 'measurement.json').read_bytes())['scale_plan_sha256']
+    if hashlib.sha256(path.read_bytes()).hexdigest() != expected_hash:
+        raise ValueError('Scale plan checksum mismatch')
+    if args.compare_runs:
+        if args.reference_length is not None or args.expected_scales is not None:
+            raise ValueError('--scale-plan already supplies reference length and expected scales')
+        args.reference_length = plan['li']
+        args.expected_scales = plan['delta_dx']
+    elif args.scale_index is not None:
+        if args.scale_index not in range(5):
+            raise ValueError('Scale index must be between 0 and 4')
+        if (args.data_path != str(SCRATCH_ROOT / 'preprocessed_paper_data.npz')
+                and str(scratch_path(args.data_path)) != plan['data']['path']):
+            raise ValueError('Data override conflicts with scale plan')
+        args.data_path = plan['data']['path']
+        stat = Path(args.data_path).stat()
+        if (stat.st_size, stat.st_mtime_ns) != (plan['data']['size_bytes'], plan['data']['mtime_ns']):
+            raise ValueError('Input file changed since integral-scale measurement')
+        if args.time_start != 0 or args.time_stop is not None or args.alpha is not None:
+            raise ValueError('The scale plan supplies the time window and alpha; omit overrides')
+        args.time_start, args.time_stop = plan['time_start'], plan['time_stop']
+        args.alpha = plan['alpha']
+        args.delta_dx = plan['delta_dx'][args.scale_index]
+    else:
+        raise ValueError('--scale-plan requires --scale-index or --compare-runs')
+    args.scale_plan = str(path)
+
+
+def measure_li(args):
+    """Execute only the source parser and the notebook integral-scale cell."""
+    repo = Path(__file__).resolve().parent
+    output = scratch_path(args.output_root)
+    data = scratch_path(args.data_path)
+    if not data.is_file():
+        raise FileNotFoundError(data)
+    if args.li_wall_margin < 3 or not 0 < args.max_delta_li <= 1:
+        raise ValueError('Require li-wall-margin >= 3 and 0 < max-delta-li <= 1')
+    root = output / ('li_' + datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ') + '_' + uuid4().hex[:8])
+    root.mkdir(parents=True, exist_ok=False)
+    scratch_runtime(root)
+    os.chdir(repo)
+    content = (repo / 'COnvection-FILTER-Copy2.ipynb').read_bytes()
+    notebook = json.loads(content)
+    (root / 'executed_notebook.ipynb').write_bytes(content)
+    namespace = globals()
+    namespace['LI_CONFIG'] = dict(data_path=str(data), run_dir=str(root), time_start=args.time_start,
+        time_stop=args.time_stop, wall_margin=args.li_wall_margin, max_delta_li=args.max_delta_li,
+        alpha=args.alpha if args.alpha is not None else 3., workers=args.workers or 8,
+        notebook_sha256=hashlib.sha256(content).hexdigest())
+    try:
+        for cid in ('restored-archive-parser', 'measure-integral-scale'):
+            cell = next(c for c in notebook['cells'] if c['id'] == cid)
+            source = ''.join(cell['source'])
+            filename = f'{repo / "COnvection-FILTER-Copy2.ipynb"}::cell::{cid}'
+            linecache.cache[filename] = (len(source), None, source.splitlines(True), filename)
+            exec(compile(source, filename, 'exec'), namespace)
+        (root / 'COMPLETE').write_text(datetime.now(timezone.utc).isoformat(), encoding='utf-8')
+        print('Integral-scale measurement and plan:', root, flush=True)
+    except BaseException:
+        (root / 'FAILED').write_text(traceback.format_exc(), encoding='utf-8')
+        raise
+
+
 def compare_runs(args):
     """Execute only the notebook's archive-comparison plotting cell."""
     root = str(scratch_path(args.compare_runs))
@@ -96,6 +174,8 @@ def compare_runs(args):
     namespace['SWEEP_COMPARE_CONFIG'] = dict(root=root, reference_length=args.reference_length,
         expected_scales=args.expected_scales, correction_budgets=args.correction_budgets,
         prescribed_only=args.prescribed_only, verify_only=args.verify_only)
+    if args.scale_plan:
+        namespace['SWEEP_COMPARE_CONFIG']['scale_plan'] = args.scale_plan
     source = ''.join(cells[0]['source'])
     filename = f'{notebook_path}::cell::{cells[0]["id"]}'
     linecache.cache[filename] = (len(source), None, source.splitlines(True), filename)
@@ -144,6 +224,9 @@ def run_notebook(args):
     config['baseline_residuals'] = not (args.skip_baseline_residuals or args.prescribed_only)
     if args.prescribed_only:
         config['prescribed_only'] = True
+    if args.scale_plan:
+        config['scale_plan'] = args.scale_plan
+        config['scale_plan_sha256'] = hashlib.sha256(Path(args.scale_plan).read_bytes()).hexdigest()
     config.update(homogeneous_recovery=False, numeric_target_experiments=False)
     config.update(output_root=str(output_root), run_dir=str(job_dir), single_scale_plots=args.plots)
     if data_path:
@@ -223,7 +306,10 @@ def run_notebook(args):
 
 if __name__ == '__main__':
     arguments = parse_args()
-    if arguments.compare_runs:
+    apply_scale_plan(arguments)
+    if arguments.measure_li:
+        measure_li(arguments)
+    elif arguments.compare_runs:
         compare_runs(arguments)
     else:
         run_notebook(arguments)
