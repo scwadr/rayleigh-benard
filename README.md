@@ -2,6 +2,10 @@
 
 The notebooks in the repository root contain the main analysis workflow.
 
+For the updated quadrature fork and native Dedalus Chebyshev-Gauss recovery,
+see [the PACE run guide](CHEBYSHEV_GAUSS_RUN.md). This uses the separately pinned
+`PySPIDER` package; the vendored `SPIDER/` sync below does not update that package.
+
 ## Repository layout
 
 - `SPIDER/` — vendored `src/PySPIDER` code from the upstream PySPIDER repository.
