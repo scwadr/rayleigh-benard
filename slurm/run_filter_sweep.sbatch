@@ -78,6 +78,11 @@ if [[ "$auto_compare" == 1 && "$task" == "${SLURM_ARRAY_TASK_MIN:-0}" ]]; then
         echo 'Partial array: not submitting a full-sweep comparison. Compare the completed subset explicitly.'
     else
         comparison_args=(--compare-runs "$sweep_root" --expected-scales "${scales[@]}")
+        for arg in "${runner_args[@]}"; do
+            if [[ "$arg" == --prescribed-only ]]; then
+                comparison_args+=(--prescribed-only)
+            fi
+        done
         if [[ -n "${REFERENCE_LENGTH:-}" ]]; then
             comparison_args+=(--reference-length "$REFERENCE_LENGTH")
         fi

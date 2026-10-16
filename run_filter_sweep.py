@@ -52,6 +52,8 @@ def parse_args():
     parser.add_argument('--include-corrections', action='store_true', help='Compatibility flag: matched correction budgets are now all plotted by default')
     parser.add_argument('--expected-scales', type=float, nargs='+', help='Comparison requires exactly these completed Delta/dx values')
     parser.add_argument('--correction-budgets', type=int, nargs='+', help='Comparison budgets to plot; default: every available matched positive budget')
+    parser.add_argument('--prescribed-only', action='store_true', help='Evaluate/compare only fixed gradient and gradient-plus-Hessian models, preserving the baseline-fit crop; no library integration or regression')
+    parser.add_argument('--verify-only', action='store_true', help='With --compare-runs, validate completed archives and write an audit without plotting or recomputing fields')
     parser.add_argument('--data-path', default=os.environ.get('DATA_PATH', str(SCRATCH_ROOT / 'preprocessed_paper_data.npz')))
     parser.add_argument('--output-root',
                         default=os.environ.get('OUTPUT_ROOT', str(DEFAULT_OUTPUT_ROOT)),
@@ -92,7 +94,8 @@ def compare_runs(args):
         raise RuntimeError('Expected one notebook sweep-comparison cell')
     namespace = globals()
     namespace['SWEEP_COMPARE_CONFIG'] = dict(root=root, reference_length=args.reference_length,
-        expected_scales=args.expected_scales, correction_budgets=args.correction_budgets)
+        expected_scales=args.expected_scales, correction_budgets=args.correction_budgets,
+        prescribed_only=args.prescribed_only, verify_only=args.verify_only)
     source = ''.join(cells[0]['source'])
     filename = f'{notebook_path}::cell::{cells[0]["id"]}'
     linecache.cache[filename] = (len(source), None, source.splitlines(True), filename)
@@ -100,9 +103,11 @@ def compare_runs(args):
 
 
 def run_notebook(args):
-    if (args.reference_length is not None or args.include_corrections
+    if (args.verify_only or args.reference_length is not None or args.include_corrections
             or args.expected_scales is not None or args.correction_budgets is not None):
         raise ValueError('Comparison options require --compare-runs')
+    if args.prescribed_only and (args.skip_flux or args.flux_include_general):
+        raise ValueError('--prescribed-only requires flux evaluation and excludes general models')
     if sys.version_info < (3, 12):
         raise RuntimeError('Vendored SPIDER uses Python 3.12 syntax; activate its PACE environment')
     for name in ('delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'alpha',
@@ -136,7 +141,9 @@ def run_notebook(args):
         'alpha', 'closure_max_terms', 'maximum_correction_terms',
         'flux_batch_size', 'flux_cache_mib', 'flux_include_general', 'flux_tile_size', 'flux_workers')
         if getattr(args, name) is not None}
-    config['baseline_residuals'] = not args.skip_baseline_residuals
+    config['baseline_residuals'] = not (args.skip_baseline_residuals or args.prescribed_only)
+    if args.prescribed_only:
+        config['prescribed_only'] = True
     config.update(homogeneous_recovery=False, numeric_target_experiments=False)
     config.update(output_root=str(output_root), run_dir=str(job_dir), single_scale_plots=args.plots)
     if data_path:
@@ -147,13 +154,17 @@ def run_notebook(args):
     (job_dir / 'executed_notebook.ipynb').write_bytes(content)
     manifest = dict(created_utc=created.isoformat(), status='running', config=config,
         notebook_sha256=hashlib.sha256(content).hexdigest(),
-        workflow='SGS discovery, coefficient verification and tiled flux analysis; no broad PDE recovery or legacy experiments',
-        requested=dict(homogeneous_recovery=False, closures=True,
-                       baseline_residuals=not args.skip_baseline_residuals,
+        workflow=('Prescribed gradient/Hessian benchmarks; no discovery' if args.prescribed_only else
+                  'SGS discovery, coefficient verification and tiled flux analysis; no broad PDE recovery or legacy experiments'),
+        requested=dict(homogeneous_recovery=False, library_integration=not args.prescribed_only,
+                       closures=not args.prescribed_only,
+                       baseline_residuals=config['baseline_residuals'],
                        numeric_target_experiments=False,
                        flux=not args.skip_flux, plots=args.plots), cells=[])
     allowed = {'setup', 'library', 'closures', 'archive'}
-    if not args.skip_baseline_residuals:
+    if args.prescribed_only:
+        allowed = {'setup', 'prescribed_setup', 'archive'}
+    if config['baseline_residuals']:
         allowed.add('baseline_residuals')
     if not args.skip_flux:
         allowed.add('flux')
@@ -161,7 +172,7 @@ def run_notebook(args):
     if len(flux_cells) != 1 or flux_cells[0]['id'] != 'dc5ac1e7':
         raise RuntimeError('Expected only the successful replacement cell dc5ac1e7 in the batch flux stage')
     manifest['excluded_cells'] = [cell['id'] for cell in notebook['cells']
-        if any(tag in {'pace:homogeneous', 'pace:inhomogeneous', 'pace:flux_legacy'}
+        if any(tag.startswith('pace:') and tag[5:] not in allowed
                for tag in cell.get('metadata', {}).get('tags', []))]
     manifest['plot_policy'] = 'replacement-cell flux plots only; legacy diagnostic plot cells are not batch stages'
     print('Run directory:', job_dir, flush=True)
