@@ -1,5 +1,20 @@
 # SPIDER compatibility and merge audit
 
+## Consolidation status
+
+Implemented after this audit: main's current Copy2 and the feature branch now
+use one pinned external PySPIDER through `pyspider_runtime.py`. The vendor tree
+and sync utility are removed. Scratch snapshots and archives verify package
+identity; legacy-package fit reuse is rejected. Copy2's scientific cells and
+Gauss's scientific cells were preserved. The original audit below refers to
+the pre-migration revisions, not the current file layout.
+
+At the user's explicit request, `successful-native-chebyshev-run` will mark
+the consolidated main revision. The originally tagged commit remains
+`e431fcb`; moving the tag is not a new PACE validation result. No new Gauss
+closure/flux functionality was added.
+
+
 Audited 2026-10-17. This is a static source audit, not a PACE execution result.
 
 ## Decision
@@ -152,9 +167,9 @@ Additional issues will not appear as Git conflicts:
   `ndomains=32` override should be resolved so both pipelines can use the same
   configured installation and honor their documented controls.
 
-The existing successful-run tag should remain on `e431fcb`; a merge or package
-migration is a new revision and does not inherit numerical validation from
-that tag.
+The audit originally recommended retaining the tag on `e431fcb`. The user
+subsequently requested moving it to the consolidation; that new revision
+does not inherit numerical validation merely from the tag name.
 
 ## PACE acceptance before claiming numerical equivalence
 

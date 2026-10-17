@@ -4,8 +4,9 @@ The new entry point is `COnvection-FILTER-Chebyshev-Gauss.ipynb`, using the
 unmodified `pjo0213/PySPIDER:upstream-plus-quadrature` revision
 `ccc892cdc84fb183c13531a7fa654132acbe1818`. Its dependency is pinned in
 `requirements-chebyshev-gauss.txt`. The obsolete Lobatto notebooks and their
-old requirement are available in Git history. The vendored
-`SPIDER/` is a different implementation; this notebook imports `PySPIDER`.
+old requirement are available in Git history. Both current pipelines import
+the same pinned `PySPIDER` via `pyspider_runtime.py`; the vendored package
+has been removed. This does not add Copy2 closure/flux features to Gauss.
 
 ## Findings from the source comparison
 
@@ -150,8 +151,10 @@ SPIDER_TEST_NDOMAINS=512 SPIDER_DIAGNOSTIC_ONLY=0 SPIDER_SEED=2 \
   sbatch --export=ALL slurm/paper-test/run_gauss_recovery.sbatch
 ```
 
-The notebook itself defaults to 256 domains; the batch script defaults to a
-32-domain diagnostic. Other controls: `SPIDER_FILTER_DX` (default 50),
+The checked-in notebook currently hard-codes 32 domains. To honor the batch
+domain counts above, replace its `ndomains = 32 #int(...)` assignment with
+`ndomains = int(os.environ.get("SPIDER_TEST_NDOMAINS", "256"))`. The launcher
+defaults to a 32-domain diagnostic. Other controls: `SPIDER_FILTER_DX` (default 50),
 `SPIDER_ARCHIVES` (default `run-archives`), `SPIDER_CONDA_ENV` (batch environment),
 and optional `SPIDER_RUN_PROVENANCE` (a user-supplied JSON run record to archive).
 Do not set the parallel override for this combined JAX/recovery workflow.
@@ -197,8 +200,8 @@ discretization errors are additional possible contributors to a nonzero balance.
 ## Archives and validation status
 
 Every recovery execution creates a timestamp-plus-UUID directory and snapshots
-both notebooks, requirements, this guide, all Dedalus sources and the imported
-PySPIDER package. It records git revision/dirty status, installed packages,
+both notebooks, requirements, this guide, the shared dependency requirements/runtime helper, all Dedalus sources and
+the imported PySPIDER package. It records git revision/dirty status, installed packages,
 data path/size/mtime/SHA256, physical coefficients, settings, exact domains,
 original and pruned matrices, term ordering, pruning and balance diagnostics.
 Each regression attempt records its selection, settings, split rows, returned

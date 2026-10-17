@@ -1,5 +1,10 @@
 # PACE: separate discovery and prescribed-only sweeps
 
+Both pipelines now use the external package in `requirements-pyspider.txt`.
+Install it in the PACE environment before these commands (see `README.md`).
+The sweep snapshots the selected package on scratch and records its revision
+and source hashes. This consolidation preserves Copy2's scientific cells.
+
 ## What will run
 
 Both submissions use the same completed integral-scale measurement and scale
@@ -51,11 +56,10 @@ Set `PLAN` to that actual absolute path, not the placeholder below:
 
 ```bash
 PLAN=/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/measure_TIMESTAMP_ID/li_TIMESTAMP_ID/scale_plan.json
-OLD=/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/sweep_14094098
 
 # Separate submission 1: general discovery plus prescribed benchmarks.
 SWEEP_ARRAY=0-5%1 bash slurm/submit_filter_workflow.sh discover \
-  --scale-plan "$PLAN" --reuse-runs "$OLD"
+  --scale-plan "$PLAN"
 
 # Separate submission 2: prescribed benchmarks only.
 SWEEP_ARRAY=0-5%1 bash slurm/submit_filter_workflow.sh prescribed \
@@ -71,11 +75,12 @@ uses `mktemp -d` separately for every invocation, with `discover_` and
 `prescribed_` prefixes; the two runs cannot share their generated directories
 with these commands. Each also stores its job ID in `submission.txt`.
 
-Existing widths 25 and 50 are not overwritten. Discovery reuses their fits
-only when the exact planned width and compatibility/integrity checks match.
-Their missing general-model flux metrics still need evaluation. New widths
-require new fits. The prescribed-only submission deliberately evaluates its
-own benchmarks in its own directory, as requested.
+Existing archives are never overwritten. Fresh discovery runs use the pinned
+PySPIDER implementation. Add `--reuse-runs /path/to/completed/new-package/runs`
+only for archives created with the same package identity and compatible inputs
+and settings. Legacy vendored-SPIDER fits are rejected for reuse, but remain
+available for archive-only inspection/plotting. The prescribed-only submission
+evaluates its own benchmarks in its own directory.
 
 ## Where everything goes
 

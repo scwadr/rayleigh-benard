@@ -1,5 +1,10 @@
 # Figure 2 audit and reuse of sweep 14094098
 
+Both pipelines now use the external package in `requirements-pyspider.txt`.
+Install it in the PACE environment before these commands (see `README.md`).
+The sweep snapshots the selected package on scratch and records its revision
+and source hashes. This consolidation preserves Copy2's scientific cells.
+
 ## Current workflow: measure first, discover models, compare both families
 
 Use this workflow for the requested six-width comparison. The prescribed-only
@@ -35,9 +40,8 @@ Once that job succeeds, set `PLAN` to its actual file and launch:
 
 ```bash
 PLAN=/absolute/scratch/path/printed/by/measurement/scale_plan.json
-OLD=/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/sweep_14094098
 bash slurm/submit_filter_workflow.sh discover \
-  --scale-plan "$PLAN" --reuse-runs "$OLD"
+  --scale-plan "$PLAN"
 ```
 
 The helper defaults to `--array=0-5%1` for six widths. Check the printed plan;
@@ -50,13 +54,11 @@ does discover additive residual corrections; it is separate from general
 model discovery and is unnecessary for these comparisons. General discovery
 keeps the existing SPIDER power initializer that completed at every old width.
 
-Completed widths 25 and 50 are preserved. If either exactly matches a planned
-width and passes compatibility/integrity checks, its saved library integrals
-and general fitted equations are reused without integration or refitting.
-The old runs did not save general-model flux metrics, so those metrics still
-require evaluation. If neither width matches, the new widths require new
-fits; the old widths are not relaunched or substituted into the uniform grid.
-Reused fits retain their original source/provenance archive in the new archive.
+Completed legacy widths 25 and 50 remain preserved. After package consolidation,
+the commands above create fresh fits rather than reusing those vendored-SPIDER
+fits. `--reuse-runs` accepts only archives with matching pinned package source
+hashes as well as the existing input/settings checks. Archive-only verification
+and plots of legacy runs remain available; do not mix old/new package identities.
 
 After all tasks succeed, the array automatically submits comparison.
 Alternatively, rerun only auditing/plotting with the new sweep directory:

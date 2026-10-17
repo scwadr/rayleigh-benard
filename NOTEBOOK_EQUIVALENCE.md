@@ -1,5 +1,15 @@
 # Notebook restoration record
 
+## 2026-10-17 dependency consolidation
+
+The feature branch was merged while preserving main's Copy2 cell IDs, stage tags,
+and scientific code. Imports now use the shared pinned `PySPIDER`, and setup,
+package snapshots, and archive-reuse identity checks were updated. The old
+interpolation notebook is now `prepare-numpy-files-interpolate.py`. This is a
+source-preservation statement, not numerical validation of the new integration
+implementation. The restoration record below describes the earlier work.
+
+
 Restoration source: `102c126:COnvection-FILTER-Copy2.ipynb`, immediately before
 the batch refactor. The previous consolidation changed scientific defaults and
 removed searches; it was not equivalent. This restoration reverses those changes.

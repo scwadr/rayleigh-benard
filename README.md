@@ -1,4 +1,4 @@
-﻿# Rayleigh–Bénard recovery on PACE
+# Rayleigh–Bénard recovery on PACE
 
 Both pipelines start from the same Dedalus snapshots. Run simulations,
 preprocessing, and recovery on PACE compute nodes. Submit from the repository
@@ -7,7 +7,7 @@ root, not from `slurm/`.
 | Pipeline | Preprocessing | Recovery | Package |
 | --- | --- | --- | --- |
 | Native Gauss (uninterpolated input) | `prepare-numpy-files-chebyshev-gauss.ipynb` | `COnvection-FILTER-Chebyshev-Gauss.ipynb` | Installed, pinned `PySPIDER` |
-| Interpolated uniform grid | `prepare-numpy-files-interpolate.py` | `COnvection-FILTER-Copy2.ipynb` | Repository's `SPIDER/` |
+| Interpolated uniform grid | `prepare-numpy-files-interpolate.py` | `COnvection-FILTER-Copy2.ipynb` | Same installed, pinned `PySPIDER` |
 
 Gauss preprocessing preserves the original vertical samples; its filtering
 stage evaluates convolutions on a new interior Gauss grid. Copy2 interpolates
@@ -68,25 +68,33 @@ conda create -n SPIDER python=3.12 pip
 source activate SPIDER
 python -m pip install numpy scipy h5py matplotlib joblib tqdm z3-solver findiff \
   numba-kdtree jax jaxlib jax-cfd nbconvert nbformat ipykernel
-python -m pip install --force-reinstall -r requirements-chebyshev-gauss.txt
+python -m pip install --force-reinstall -r requirements-pyspider.txt
 python -m pip check
 python -m ipykernel install --user --name spider-gauss --display-name 'SPIDER Gauss'
 python -m ipykernel install --user --name spider-copy2 --display-name 'SPIDER Copy2'
 ```
 
-Both kernels use this environment. Copy2 imports the vendored `SPIDER` from the
-repository and needs no separate package installation. CPU JAX suffices for the
-supplied CPU jobs. In an already provisioned environment, reinstall just the
-fork using `python -m pip install --no-deps --force-reinstall -r requirements-chebyshev-gauss.txt`,
+Both kernels use the same pinned `PySPIDER` package. There is no vendored
+implementation or vendor-sync step. CPU JAX suffices for the supplied CPU jobs. In an already provisioned environment, reinstall just the
+fork using `python -m pip install --no-deps --force-reinstall -r requirements-pyspider.txt`,
 then run `python -m pip check`. `--no-deps` assumes dependencies are installed.
 Restart notebook kernels after changing packages.
 
 The requirements file installs commit `ccc892cdc84fb183c13531a7fa654132acbe1818`
 from `pjo0213/PySPIDER:upstream-plus-quadrature`, not the latest branch head.
-`scripts/sync-pyspider.ps1` updates only Copy2's vendored code; it is not an
-installation step and does not update Gauss's package. Keep the external fork
-unmodified. For checkout-based installation instead of pip, see
-[the detailed Gauss guide](CHEBYSHEV_GAUSS_RUN.md).
+`pyspider_runtime.py` checks the selected package revision and imported path.
+The sweep runner snapshots that package into each scratch working directory;
+new run archives store its source hashes and revision. Leave `SPIDER_CHECKOUT`
+unset for the pip installation, or point it to a clean checkout of the same pin.
+Do not set `SPIDER_RUNTIME_MANIFEST` yourself; it selects the runner's verified
+scratch snapshot. Restart kernels before switching source installations.
+`requirements-chebyshev-gauss.txt` remains a compatibility wrapper around the
+shared requirements file. The external package remains unmodified.
+
+This consolidation preserves main's current Copy2 scientific workflow.
+Chebyshev's closure/flux functionality has **not** been brought up to Copy2's
+level; that is separate future work. Sharing a package does not make Copy2
+accept native Gauss data. Use the preprocessor appropriate to each notebook.
 
 ## 3. Generate the common data
 
@@ -143,19 +151,17 @@ and recovery. The Gauss preprocessor checks nodes on `z_interval=(0.0, 1.0)`.
 
 ### Required notebook configuration
 
-The checked-in recovery notebook contains two session-specific overrides.
-Edit `COnvection-FILTER-Chebyshev-Gauss.ipynb` before the commands below:
+Both notebooks now use the shared package selector; no account-specific
+checkout assignment needs removal. Gauss's scientific cells remain unchanged.
+Its domain-setup cell still contains the session-specific line:
 
-1. In the first code cell, remove
-   `os.environ["SPIDER_CHECKOUT"] = "/storage/home/hcoda1/2/ashelestov3/PySPIDER-gauss"`.
-   Leave the following `source_checkout = os.environ.get("SPIDER_CHECKOUT")`
-   logic intact. With the variable unset, this selects your pip installation.
-2. In domain setup, replace
-   `ndomains = 32 #int(os.environ.get("SPIDER_TEST_NDOMAINS", "256"))`
-   with `ndomains = int(os.environ.get("SPIDER_TEST_NDOMAINS", "256"))`.
-   Otherwise every run uses 32 domains regardless of the environment variable.
+```python
+ndomains = 32 #int(os.environ.get("SPIDER_TEST_NDOMAINS", "256"))
+```
 
-Exporting shell variables alone cannot override these source assignments.
+Before using environment-variable domain counts below, replace that line with
+`ndomains = int(os.environ.get("SPIDER_TEST_NDOMAINS", "256"))`. Otherwise every
+run uses 32 domains. This is configuration for your run, not a change to Copy2.
 
 ### Preprocess and inspect diagnostics
 
@@ -204,55 +210,43 @@ Results:
 See [CHEBYSHEV_GAUSS_RUN.md](CHEBYSHEV_GAUSS_RUN.md) for interpretation and retries.
 The source-override edits above also apply when following that guide.
 
-## 5. Interpolated uniform-grid pipeline (Copy2)
+## 5. Interpolated uniform-grid pipeline (current Copy2)
 
-### Configure paths and matrix assembly
+Use main's tagged-cell runner, `run_filter_sweep.py`. It preserves general tau/phi
+discovery, prescribed gradient/Hessian benchmarks, flux analysis, and immutable
+archives. Do not use numbered cell selections from the older feature notebook.
 
-Copy2 does not read the Gauss environment variables. Edit these source settings:
+### Configure paths and preprocess
 
 | File | Setting | Value |
 | --- | --- | --- |
-| `prepare-numpy-files-interpolate.py` | `h5py.File(...)` input | Absolute production snapshot path |
-| Same preprocessor | `save_path` near the end | Absolute path to your `preprocessed/interpolated.npz` |
-| `COnvection-FILTER-Copy2.ipynb` | `load_path` in cell 2 | The same interpolated NPZ path |
+| `prepare-numpy-files-interpolate.py` | `h5py.File(...)` | Absolute production snapshot path |
+| Same preprocessor | `save_path` | Your interpolated NPZ path |
+| Shell before submission | `DATA_PATH` | Exactly the same NPZ path |
+| Copy2, interactive use only | `load_path` or `RUN_CONFIG['data_path']` | Exactly the same NPZ path |
 
-The preprocessor interpolates onto `np.linspace(0, 1, 1536)`. Recovery also
-hard-codes that grid and `size_x=4096`, `size_y=1536`; keep these consistent if
-changing resolution or bounds. Preserve the existing velocity-component swaps
-for the existing data convention. Plot diagnostics use time index 50: provide
-at least 51 time samples or change those indices. The NPZ writer overwrites
-existing files, so use a new filename for each dataset you want to retain.
+The preprocessor and runner default to
+`/storage/scratch1/2/ashelestov3/preprocessed_paper_data.npz`. The preprocessor
+overwrites an existing NPZ; use a new path to preserve older data. It interpolates
+onto `np.linspace(0, 1, 1536)`. Match the hard-coded grid dimensions/bounds in
+preprocessing and Copy2 if your simulation differs. Diagnostics use time index
+50, so use at least 51 samples or edit the plot indices. Preserve the existing
+velocity-component swaps for the existing data convention.
 
-For a first headless run, use serial matrix assembly. In the Copy2 cell containing
-`remove_terms` and `srd.make_library_matrices`, replace
-`num_processorz = num_cores - 4` with `num_processorz = 1`, and replace the
-matrix-construction call with:
+The sweep intentionally restricts data, caches and output to its configured
+scratch root. For another account, replace `/storage/scratch1/2/ashelestov3`
+consistently in `run_filter_sweep.py`, `slurm/submit_filter_workflow.sh`,
+`slurm/measure_li.sbatch`, `slurm/run_filter_sweep.sbatch`, and
+`slurm/plot_filter_sweep.sbatch`, including the path-validation patterns and
+default log paths. Merely exporting a path outside that root is rejected.
+Also change the Slurm account/QOS directives for your allocation.
 
-```python
-srd.make_library_matrices(debug=False, parallel=False)
-```
-
-This avoids the current CPU-count-based pool exceeding a Slurm allocation and
-avoids forking after JAX initialization. Copy2 does not honor
-`SPIDER_TEST_PARALLEL`. Its domain count is calculated from library size in that
-cell; `dom_width=64` and `dom_time=40` must fit the retained data.
-
-### Preprocess and run the main recovery
-
-Copy2 contains an exploratory sweep and later experiments using hard-coded
-column indices. For a first run, execute cells 1–15, then cell 17 (beginning
-`reg_opts_list = []`), skipping the sweep in cell 16 and later experiments.
-These are notebook positions, not execution counters. In Jupyter on a PACE
-compute node, select `SPIDER Copy2` and execute that sequence after running
-`MPLBACKEND=Agg python prepare-numpy-files-interpolate.py` in the same allocation.
-
-For a fully headless run, save this as `run_copy2.sbatch` in the repository root.
-Edit the allocation directives first. It runs the same selection in a generated
-notebook, leaving the original notebook intact:
+Save this preprocessing-only launcher as `run_preprocess.sbatch` in the
+repository root, editing allocation and resource requests for your run:
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name=rb_copy2
+#SBATCH --job-name=rb_preprocess
 #SBATCH --account=gts-rg119
 #SBATCH --qos=embers
 #SBATCH --constraint=amd
@@ -264,55 +258,86 @@ notebook, leaving the original notebook intact:
 #SBATCH --output=%x-%j.out
 set -euo pipefail
 module load anaconda3
-source activate SPIDER
+source activate "${SPIDER_ENV:-SPIDER}"
 cd "${SLURM_SUBMIT_DIR:?Submit from the repository root}"
 export MPLBACKEND=Agg
 export OMP_NUM_THREADS="$SLURM_CPUS_PER_TASK"
 export OPENBLAS_NUM_THREADS="$SLURM_CPUS_PER_TASK"
-export PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}"
-export COPY2_OUTPUT="$PWD/executed-notebooks/$SLURM_JOB_ID"
-mkdir -p "$COPY2_OUTPUT"
-if [[ "${COPY2_PREPROCESS:-1}" == 1 ]]; then
-    python prepare-numpy-files-interpolate.py
-fi
-python - <<'PY'
-import os
-from pathlib import Path
-import nbformat
-nb = nbformat.read('COnvection-FILTER-Copy2.ipynb', as_version=4)
-assert 'reg_opts_list = []' in nb.cells[16].source
-assert 'interleave_identify' in nb.cells[16].source
-nb.cells = nb.cells[:15] + [nb.cells[16]]
-for cell in nb.cells:
-    if cell.cell_type == 'code':
-        cell.outputs = []
-        cell.execution_count = None
-nbformat.write(nb, Path(os.environ['COPY2_OUTPUT']) / 'Copy2-input.ipynb')
-PY
-python -m nbconvert --to notebook --execute "$COPY2_OUTPUT/Copy2-input.ipynb" \
-    --ExecutePreprocessor.timeout=-1 --ExecutePreprocessor.kernel_name=spider-copy2 \
-    --output=Copy2-executed --output-dir="$COPY2_OUTPUT"
+python prepare-numpy-files-interpolate.py
 ```
-
-Submit from the repository root:
 
 ```bash
-sbatch run_copy2.sbatch
-# Later, reuse the existing NPZ without overwriting it:
-COPY2_PREPROCESS=0 sbatch --export=ALL run_copy2.sbatch
+export SPIDER_ENV=SPIDER
+export DATA_PATH="$RB_DATA/preprocessed/interpolated.npz"
+# First edit save_path in the preprocessor to this absolute path.
+sbatch run_preprocess.sbatch
 ```
 
-Adjust memory and runtime to data size: full fields and products are held in
-memory. Results are `rb_copy2-JOBID.out` and
-`executed-notebooks/JOBID/Copy2-executed.ipynb`, containing equations, residuals,
-and plots. Copy2 does not create Gauss-style archives or save matrices
-automatically. Preserve the executed notebook, source edits, input identity,
-job log, and `python -m pip freeze` output together.
+Wait for successful completion before measurement. Reuse the NPZ by skipping
+this step. Resource requests are estimates; full fields/products occupy memory.
 
-Copy2 retains historical time-step/time-scale calculations, stress/pressure
-conventions, trimming, and term-removal choices. Running it reproduces that
-workflow; it does not apply native Gauss's equation cleanup. Inspect diagnostics
-before interpreting coefficients.
+### Measure, discover, and compare
+
+```bash
+bash slurm/submit_filter_workflow.sh measure
+```
+
+Read the printed submission directory's measurement log after completion. Set
+`PLAN` to the actual completed `scale_plan.json` it reports:
+
+```bash
+PLAN=/absolute/path/printed/by/measurement/scale_plan.json
+SWEEP_ARRAY=0-5%1 bash slurm/submit_filter_workflow.sh discover --scale-plan "$PLAN"
+```
+
+The usual plan has six widths; match the array range to the actual plan if
+support limiting removes a duplicate. `discover` runs general tau/phi discovery
+plus discovered and prescribed flux benchmarks. It excludes broad homogeneous
+PDE recovery, legacy numerical-target experiments, and optional frozen-baseline
+residual searches. Those remain available in the full notebook; see
+[PACE_FILTER_SWEEP.md](PACE_FILTER_SWEEP.md) for its interactive stage order.
+The existing parallel settings remain; this consolidation does not change the
+scientific workflow or resolve its multiprocessing-after-JAX limitations.
+
+To run prescribed benchmarks without discovery, submit separately:
+
+```bash
+SWEEP_ARRAY=0-5%1 bash slurm/submit_filter_workflow.sh prescribed --scale-plan "$PLAN"
+```
+
+Discovery already includes prescribed benchmarks, so this second submission is
+optional. Each array task processes one width. The helper prints a unique
+scratch submission directory containing logs and the job ID. It sets its own
+`OUTPUT_ROOT`; edit the helper's `base` to change that parent location.
+The array requests 64 CPUs, node memory, and eight hours per task by default.
+Adjust those in `slurm/run_filter_sweep.sbatch` as needed.
+
+Each run saves `execution.json`, `COMPLETE` or `FAILED`, source snapshots,
+discovery candidates/matrices, and flux metrics. Automatic comparison requires
+the whole array to succeed. For manual plotting/auditing:
+
+```bash
+bash slurm/submit_filter_workflow.sh plot \
+  --compare-runs /absolute/path/to/sweep_JOB --scale-plan "$PLAN" --discovery-benchmarks
+```
+
+Add `--verify-only` for archive checks without plotting. The full directory map,
+failure handling, and commands are in [PACE_TWO_RUNS.md](PACE_TWO_RUNS.md).
+
+### Reuse after consolidation
+
+`--reuse-runs` remains available for completed fits with the **same pinned
+package source hashes**, compatible data, settings, and notebook definitions.
+Legacy vendored-SPIDER fits lack that package identity and are rejected for
+reuse. Keep them intact; omit `--reuse-runs` to create fresh fits under the new
+package. Archive-only checks/plots of old runs remain available and do not
+relabel them as new-package results. Do not mix package identities in one
+cross-width comparison.
+
+Copy2's filtering, time-scale conventions, term libraries, model searches, and
+flux definitions are unchanged from main. Numerical equivalence after the
+integration implementation change still needs PACE validation; source-level
+compatibility alone does not establish identical fitted coefficients.
 
 ## 6. Monitor and preserve results
 
