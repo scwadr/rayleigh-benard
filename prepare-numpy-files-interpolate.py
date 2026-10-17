@@ -1,3 +1,6 @@
+from pyspider_runtime import activate_pyspider
+activate_pyspider()
+
 # Copy2 preprocessing, exported from prepare-numpy-files-interpolate.ipynb.
 
 # Run on PACE from the repository root: MPLBACKEND=Agg python prepare-numpy-files-interpolate.py
@@ -7,11 +10,11 @@
 import joblib
 import h5py
 import numpy as np
-from SPIDER.commons.utils import save, load
-from SPIDER.continuous.library import *
+from PySPIDER.commons.utils import save, load
+from PySPIDER.continuous.library import *
 import gc
-from SPIDER.continuous.process_library_terms import *
-from SPIDER.commons.identify_models import *
+from PySPIDER.continuous.process_library_terms import *
+from PySPIDER.commons.identify_models import *
 import copy
 import jax
 import jax.numpy as jnp

@@ -1,2 +1,2 @@
-# Unmodified upstream-plus-quadrature; node-count API and Gauss integration.
-PySPIDER_SR @ git+https://github.com/pjo0213/PySPIDER.git@ccc892cdc84fb183c13531a7fa654132acbe1818
+# Backward-compatible entry point; both pipelines use the same pinned package.
+-r requirements-pyspider.txt

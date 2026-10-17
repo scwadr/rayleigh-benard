@@ -1,5 +1,13 @@
 # SPIDER compatibility and merge audit
 
+Current branch scope: the final feature-branch notebooks now share the pinned
+PySPIDER dependency, without importing main's newer model-discovery workflow.
+The tag `successful-native-chebyshev-run` marks that cleaned feature state, not
+the merged main branch. The audit below records the earlier comparison and
+main migration requirements; those main-specific workflows are not on this branch.
+The originally tagged successful run remains identifiable as commit `e431fcb`.
+No new PACE run was performed for dependency consolidation.
+
 Audited 2026-10-17. This is a static source audit, not a PACE execution result.
 
 ## Decision

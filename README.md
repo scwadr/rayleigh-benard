@@ -1,4 +1,4 @@
-﻿# Rayleigh–Bénard recovery on PACE
+# Rayleigh–Bénard recovery on PACE
 
 Both pipelines start from the same Dedalus snapshots. Run simulations,
 preprocessing, and recovery on PACE compute nodes. Submit from the repository
@@ -7,7 +7,7 @@ root, not from `slurm/`.
 | Pipeline | Preprocessing | Recovery | Package |
 | --- | --- | --- | --- |
 | Native Gauss (uninterpolated input) | `prepare-numpy-files-chebyshev-gauss.ipynb` | `COnvection-FILTER-Chebyshev-Gauss.ipynb` | Installed, pinned `PySPIDER` |
-| Interpolated uniform grid | `prepare-numpy-files-interpolate.py` | `COnvection-FILTER-Copy2.ipynb` | Repository's `SPIDER/` |
+| Interpolated uniform grid | `prepare-numpy-files-interpolate.py` | `COnvection-FILTER-Copy2.ipynb` | Same installed, pinned `PySPIDER` |
 
 Gauss preprocessing preserves the original vertical samples; its filtering
 stage evaluates convolutions on a new interior Gauss grid. Copy2 interpolates
@@ -68,25 +68,30 @@ conda create -n SPIDER python=3.12 pip
 source activate SPIDER
 python -m pip install numpy scipy h5py matplotlib joblib tqdm z3-solver findiff \
   numba-kdtree jax jaxlib jax-cfd nbconvert nbformat ipykernel
-python -m pip install --force-reinstall -r requirements-chebyshev-gauss.txt
+python -m pip install --force-reinstall -r requirements-pyspider.txt
 python -m pip check
 python -m ipykernel install --user --name spider-gauss --display-name 'SPIDER Gauss'
 python -m ipykernel install --user --name spider-copy2 --display-name 'SPIDER Copy2'
 ```
 
-Both kernels use this environment. Copy2 imports the vendored `SPIDER` from the
-repository and needs no separate package installation. CPU JAX suffices for the
-supplied CPU jobs. In an already provisioned environment, reinstall just the
-fork using `python -m pip install --no-deps --force-reinstall -r requirements-chebyshev-gauss.txt`,
+Both kernels use the same pinned PySPIDER installation. No vendored package
+or sync script is required. CPU JAX suffices for the supplied CPU jobs. In an already provisioned environment, reinstall just the
+fork using `python -m pip install --no-deps --force-reinstall -r requirements-pyspider.txt`,
 then run `python -m pip check`. `--no-deps` assumes dependencies are installed.
 Restart notebook kernels after changing packages.
 
 The requirements file installs commit `ccc892cdc84fb183c13531a7fa654132acbe1818`
 from `pjo0213/PySPIDER:upstream-plus-quadrature`, not the latest branch head.
-`scripts/sync-pyspider.ps1` updates only Copy2's vendored code; it is not an
-installation step and does not update Gauss's package. Keep the external fork
-unmodified. For checkout-based installation instead of pip, see
-[the detailed Gauss guide](CHEBYSHEV_GAUSS_RUN.md).
+`pyspider_runtime.py` selects and verifies the pinned installation for both
+notebooks. Leave `SPIDER_CHECKOUT` unset for pip, or set it to a clean checkout of
+the same commit. Restart kernels when changing source installations. The old
+`requirements-chebyshev-gauss.txt` filename remains a wrapper around the shared
+requirements file. The external package remains unmodified.
+
+This is the final feature-branch workflow, cleaned up to one PySPIDER package.
+It does not include main's newer closure-discovery/sweep/flux workflow. Existing
+regression cells in the feature notebooks are preserved. Package consolidation
+was checked statically; it is not a new successful PACE run.
 
 ## 3. Generate the common data
 
@@ -143,19 +148,12 @@ and recovery. The Gauss preprocessor checks nodes on `z_interval=(0.0, 1.0)`.
 
 ### Required notebook configuration
 
-The checked-in recovery notebook contains two session-specific overrides.
-Edit `COnvection-FILTER-Chebyshev-Gauss.ipynb` before the commands below:
-
-1. In the first code cell, remove
-   `os.environ["SPIDER_CHECKOUT"] = "/storage/home/hcoda1/2/ashelestov3/PySPIDER-gauss"`.
-   Leave the following `source_checkout = os.environ.get("SPIDER_CHECKOUT")`
-   logic intact. With the variable unset, this selects your pip installation.
-2. In domain setup, replace
-   `ndomains = 32 #int(os.environ.get("SPIDER_TEST_NDOMAINS", "256"))`
-   with `ndomains = int(os.environ.get("SPIDER_TEST_NDOMAINS", "256"))`.
-   Otherwise every run uses 32 domains regardless of the environment variable.
-
-Exporting shell variables alone cannot override these source assignments.
+Package selection now uses the shared runtime helper; no account-specific
+checkout assignment needs removal. The scientific settings remain those of the
+feature branch. In the Gauss domain-setup cell, replace
+`ndomains = 32 #int(os.environ.get("SPIDER_TEST_NDOMAINS", "256"))`
+with `ndomains = int(os.environ.get("SPIDER_TEST_NDOMAINS", "256"))` before using
+environment-variable domain counts below. Otherwise every run uses 32 domains.
 
 ### Preprocess and inspect diagnostics
 
