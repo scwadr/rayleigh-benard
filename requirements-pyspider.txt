@@ -1,0 +1,2 @@
+# Shared, unmodified fork for uniform-grid Copy2 and native Gauss recovery.
+PySPIDER_SR @ git+https://github.com/pjo0213/PySPIDER.git@ccc892cdc84fb183c13531a7fa654132acbe1818

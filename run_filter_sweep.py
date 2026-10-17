@@ -19,6 +19,8 @@ import time
 import traceback
 from uuid import uuid4
 
+from pyspider_runtime import snapshot_pyspider
+
 SCRATCH_ROOT = Path('/storage/scratch1/2/ashelestov3')
 DEFAULT_OUTPUT_ROOT = SCRATCH_ROOT / 'rayleigh-benard' / 'filter_sweeps'
 
@@ -57,14 +59,15 @@ def scratch_working_copy(root, source):
     work = scratch_path(root) / 'runtime' / 'work'
     work.mkdir(parents=True, exist_ok=False)
     files = [source / name for name in ('COnvection-FILTER-Copy2.ipynb',
-             'prepare-numpy-files-interpolate.ipynb', 'run_filter_sweep.py')]
-    files += list((source / 'SPIDER').rglob('*.py'))
+             'prepare-numpy-files-interpolate.py', 'run_filter_sweep.py',
+             'pyspider_runtime.py', 'requirements-pyspider.txt')]
     files += list((source / 'dedalus' / 'paper-test').glob('*.py'))
     files += list((source / 'slurm').glob('*.sbatch'))
     for path in files:
         destination = work / path.relative_to(source)
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(path, destination)
+    snapshot_pyspider(work)
     globals()['SOURCE_REPO'] = str(source)
     sys.path.insert(0, str(work))
     os.chdir(work)
@@ -222,7 +225,7 @@ def run_notebook(args):
     if args.reuse_runs and not args.discovery_benchmarks:
         raise ValueError('--reuse-runs requires --discovery-benchmarks')
     if sys.version_info < (3, 12):
-        raise RuntimeError('Vendored SPIDER uses Python 3.12 syntax; activate its PACE environment')
+        raise RuntimeError('Pinned PySPIDER requires Python >=3.12; activate its PACE environment')
     for name in ('delta_dx', 'workers', 'domains', 'domain_width', 'domain_time', 'alpha',
                  'closure_max_terms', 'maximum_correction_terms',
                  'flux_batch_size', 'flux_cache_mib', 'flux_tile_size', 'flux_workers'):

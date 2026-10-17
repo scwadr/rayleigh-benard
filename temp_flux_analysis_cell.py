@@ -32,7 +32,7 @@ import linecache
 flux_executed_source = ''.join(linecache.getlines(inspect.currentframe().f_code.co_filename))
 from itertools import product
 from findiff import FinDiff
-from SPIDER.commons.z3base import LiteralIndex, highest_index
+from PySPIDER.commons.z3base import LiteralIndex, highest_index
 
 flux_batch_size = int(run_controls.get('flux_batch_size', 8))
 flux_cache_mib = int(run_controls.get('flux_cache_mib', 256))
