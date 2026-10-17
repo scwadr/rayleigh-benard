@@ -3,8 +3,8 @@
 The new entry point is `COnvection-FILTER-Chebyshev-Gauss.ipynb`, using the
 unmodified `pjo0213/PySPIDER:upstream-plus-quadrature` revision
 `ccc892cdc84fb183c13531a7fa654132acbe1818`. Its dependency is pinned in
-`requirements-chebyshev-gauss.txt`. The existing Lobatto notebooks and their
-old requirement remain available as a historical comparison. The vendored
+`requirements-chebyshev-gauss.txt`. The obsolete Lobatto notebooks and their
+old requirement are available in Git history. The vendored
 `SPIDER/` is a different implementation; this notebook imports `PySPIDER`.
 
 ## Findings from the source comparison
@@ -233,6 +233,8 @@ In the older implementation, a repeated archive cell could overwrite
 may mix attempts and must not be treated as an intact record of its first run.
 The fix prevents future overwrites but cannot restore an already replaced file.
 
-Development validation was limited to static source comparison, notebook JSON
-inspection and whitespace checks. No scientific tests or pipeline executions
-were performed locally; successful recovery remains to be demonstrated on PACE.
+The user reported a successful PACE run on October 17, 2026. Detailed coefficients
+and the corresponding archive identifier have not been recorded in this guide.
+Development validation remains limited to static source review, notebook JSON
+inspection and whitespace checks; no scientific tests or pipeline executions
+were performed locally.

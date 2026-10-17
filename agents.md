@@ -4,7 +4,18 @@
 
 2. These programs run only on a remote headless Linux cluster (Georgia Tech PACE), so testing cannot be performed in this development environment because the required packaging is too complex to support here.
 
-# TODO
+# Current pipeline
+
+- Native Gauss preprocessing and recovery are the primary pipeline. The user
+  reported a successful PACE run on 2026-10-17.
+- Retain only the native Gauss preprocessing/recovery notebooks and Copy2.
+  Copy2's interpolation preprocessor is `prepare-numpy-files-interpolate.py`.
+- Native Gauss uses the externally pinned PySPIDER package. Copy2 uses vendored
+  `SPIDER/`; `scripts/sync-pyspider.ps1` updates only that legacy vendor tree.
+- Lobatto and older notebooks are available in Git history. The log below
+  describes historical experiments, not the current repository file layout.
+
+# Legacy Copy2 TODO
 
 - Cleanup remaining filtered-equation issues:
   - Restore full `tau` plus ordinary filtered pressure.

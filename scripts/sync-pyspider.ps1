@@ -1,3 +1,5 @@
+# Legacy Copy2 vendor sync only. This does not install or update the native
+# Gauss PySPIDER package; use requirements-chebyshev-gauss.txt on PACE for that.
 param(
     [string]$Repository = "https://github.com/sibirica/PySPIDER.git",
     [string]$Branch = "main"
@@ -36,6 +38,9 @@ try {
 
     New-Item -ItemType Directory -Path $staging | Out-Null
     Get-ChildItem -LiteralPath $source -Force | Copy-Item -Destination $staging -Recurse -Force
+    # Keep upstream example notebooks out of this pipeline-only repository.
+    Get-ChildItem -LiteralPath $staging -Recurse -File -Filter '*.ipynb' |
+        ForEach-Object { Remove-Item -LiteralPath $_.FullName }
 
     if (Test-Path -LiteralPath $target) {
         Remove-Item -LiteralPath $target -Recurse -Force

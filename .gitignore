@@ -1,3 +1,8 @@
 .upstream-pyspider-review/
 run-archives/
 executed-notebooks/
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+# Cluster output belongs with the run archives, not in a release.
+*.out
