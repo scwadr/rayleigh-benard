@@ -1,7 +1,9 @@
 % APS Global Physics Summit contributed poster draft.
 % Guidelines: https://summit.aps.org/attend/abstracts/contributed/
-% Abstract body: 1273 characters including paragraph breaks and LaTeX escapes.
+% Keep the abstract body below 1300 characters, including LaTeX escapes.
 % Authors and affiliations should be supplied in the submission form.
+% Enter only the title and abstract text in their respective submission fields;
+% omit this document's preamble and environment commands and use portal defaults.
 \documentclass[11pt]{article}
 \usepackage[T1]{fontenc}
 
@@ -15,9 +17,9 @@
 \begin{abstract}
 Buoyancy-driven turbulence transports heat in systems ranging from laboratory convection to geophysical flows. Resolving every turbulent scale is often impractical, motivating models of how unresolved motions influence the resolved flow. For thermal convection, such models must describe both momentum and buoyancy transport.
 
-We present a framework for discovering interpretable subgrid closures in two-dimensional Rayleigh--B\'enard convection using symmetry-constrained sparse regression. Starting from direct numerical simulations, we filter the velocity and buoyancy fields and identify compact expressions for the unresolved stress and buoyancy flux. We assess the resulting models against nonlinear gradient expansions, examining closure accuracy and their predictions of local and mean kinetic-energy and scalar-variance transfer across filter widths. We also investigate the treatment of nonuniform vertical sampling in weak-form equation recovery, comparing interpolation onto a uniform grid with integration on native Chebyshev nodes.
+We investigate interpretable subgrid closures in two-dimensional Rayleigh--B\'enard convection using symmetry-constrained sparse regression. Using filtered velocity and buoyancy fields from direct numerical simulations, we seek compact expressions for the unresolved stress and buoyancy flux. We aim to assess these models against nonlinear gradient expansions through closure accuracy and local and mean kinetic-energy and scalar-variance transfer across filter widths. We also investigate how uniform-grid interpolation and integration on native Chebyshev nodes affect weak-form equation recovery.
 
-This approach links data-driven equation discovery to physically interpretable models of unresolved transport and provides a way to assess the strengths and limitations of gradient-based closures in buoyancy-driven turbulence.
+The goal is to develop physically interpretable models of unresolved momentum and heat transport for large-eddy simulations of buoyancy-driven flows, while identifying the strengths and limitations of gradient-based closures.
 \end{abstract}
 
 \end{document}
