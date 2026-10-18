@@ -1,2 +1,0 @@
-# Backward-compatible entry point; both pipelines use the same pinned package.
--r requirements-pyspider.txt

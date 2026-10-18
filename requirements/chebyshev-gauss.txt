@@ -1,0 +1,2 @@
+# Gauss entry point; both pipelines use the same pinned package.
+-r pyspider.txt

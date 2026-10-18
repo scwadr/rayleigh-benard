@@ -9,4 +9,4 @@
 - This branch preserves the feature notebooks, without main's newer discovery
   workflow. Keep only Gauss preprocessing/recovery and Copy2 notebooks.
 - Preserve previous run archives and source provenance. Keep generated artifacts
-  out of commits. See `README.md` and `CHEBYSHEV_GAUSS_RUN.md` for workflows.
+  out of commits. See `README.md` and `RUN_REPORT.md` for workflows.

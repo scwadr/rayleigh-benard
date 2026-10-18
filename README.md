@@ -68,7 +68,7 @@ conda create -n SPIDER python=3.12 pip
 source activate SPIDER
 python -m pip install numpy scipy h5py matplotlib joblib tqdm z3-solver findiff \
   numba-kdtree jax jaxlib jax-cfd nbconvert nbformat ipykernel
-python -m pip install --force-reinstall -r requirements-pyspider.txt
+python -m pip install --force-reinstall -r requirements/pyspider.txt
 python -m pip check
 python -m ipykernel install --user --name spider-gauss --display-name 'SPIDER Gauss'
 python -m ipykernel install --user --name spider-copy2 --display-name 'SPIDER Copy2'
@@ -76,7 +76,7 @@ python -m ipykernel install --user --name spider-copy2 --display-name 'SPIDER Co
 
 Both kernels use the same pinned PySPIDER installation. No vendored package
 or sync script is required. CPU JAX suffices for the supplied CPU jobs. In an already provisioned environment, reinstall just the
-fork using `python -m pip install --no-deps --force-reinstall -r requirements-pyspider.txt`,
+fork using `python -m pip install --no-deps --force-reinstall -r requirements/pyspider.txt`,
 then run `python -m pip check`. `--no-deps` assumes dependencies are installed.
 Restart notebook kernels after changing packages.
 
@@ -85,7 +85,7 @@ from `pjo0213/PySPIDER:upstream-plus-quadrature`, not the latest branch head.
 `pyspider_runtime.py` selects and verifies the pinned installation for both
 notebooks. Leave `SPIDER_CHECKOUT` unset for pip, or set it to a clean checkout of
 the same commit. Restart kernels when changing source installations. The old
-`requirements-chebyshev-gauss.txt` filename remains a wrapper around the shared
+`requirements/chebyshev-gauss.txt` filename remains a wrapper around the shared
 requirements file. The external package remains unmodified.
 
 This is the final feature-branch workflow, cleaned up to one PySPIDER package.
@@ -199,7 +199,7 @@ Results:
   Inspect `complete.json`, `known-momentum.json`, and `matrix-diagnostics.json`.
   A diagnostic-only completion is not a regression result.
 
-See [CHEBYSHEV_GAUSS_RUN.md](CHEBYSHEV_GAUSS_RUN.md) for interpretation and retries.
+See [RUN_REPORT.md](RUN_REPORT.md) for interpretation and retries.
 The source-override edits above also apply when following that guide.
 
 ## 5. Interpolated uniform-grid pipeline (Copy2)

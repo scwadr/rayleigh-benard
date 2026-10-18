@@ -49,10 +49,10 @@ def resolve_source():
         try:
             distribution = importlib.metadata.distribution(DISTRIBUTION)
         except importlib.metadata.PackageNotFoundError as exc:
-            raise RuntimeError("Install requirements-pyspider.txt or set SPIDER_CHECKOUT") from exc
+            raise RuntimeError("Install requirements/pyspider.txt or set SPIDER_CHECKOUT") from exc
         direct_url = json.loads(distribution.read_text("direct_url.json") or "{}")
         if direct_url.get("vcs_info", {}).get("commit_id") != PIN:
-            raise RuntimeError("PySPIDER revision differs; install requirements-pyspider.txt")
+            raise RuntimeError("PySPIDER revision differs; install requirements/pyspider.txt")
         package = Path(distribution.locate_file("PySPIDER")).resolve()
         identity = {"revision": PIN, "mode": "pip-distribution",
                     "distribution": DISTRIBUTION, "version": distribution.version,

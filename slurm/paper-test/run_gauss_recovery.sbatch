@@ -14,7 +14,7 @@ set -euo pipefail
 module load anaconda3
 source activate "${SPIDER_CONDA_ENV:-SPIDER}"
 cd "${SLURM_SUBMIT_DIR:?Submit from the repository root}"
-[[ -f requirements-chebyshev-gauss.txt ]] || { echo "Submit from repository root" >&2; exit 1; }
+[[ -f requirements/chebyshev-gauss.txt ]] || { echo "Submit from repository root" >&2; exit 1; }
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
 export OPENBLAS_NUM_THREADS="$OMP_NUM_THREADS"
 export MPLBACKEND=Agg
