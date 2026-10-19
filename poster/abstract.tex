@@ -4,10 +4,14 @@
 % Authors and affiliations should be supplied in the submission form.
 % Enter only the title and abstract text in their respective submission fields;
 % omit this document's preamble and environment commands and use portal defaults.
+% Scientific background: root manuscript, sections 3.1 and 4.1--4.2.
+% Preliminary gradient recovery is reported by the author in the revision request;
+% its tensor coverage, order, and coefficients are not specified here.
+% The manuscript's periodic-flow performance results are not convection results.
 \documentclass[11pt]{article}
 \usepackage[T1]{fontenc}
 
-\title{Data-Driven Discovery of Subgrid Closures for Rayleigh--B\'enard Convection}
+\title{Symmetry-Constrained Discovery of Subgrid Transport in Rayleigh--B\'enard Convection}
 \author{}
 \date{}
 
@@ -15,11 +19,11 @@
 \maketitle
 
 \begin{abstract}
-Buoyancy-driven turbulence transports heat in systems ranging from laboratory convection to geophysical flows. Resolving every turbulent scale is often impractical, motivating models of how unresolved motions influence the resolved flow. For thermal convection, such models must describe both momentum and buoyancy transport.
+In Rayleigh--B\'enard convection, temperature differences drive fluid motion, which in turn transports heat. Simulations that resolve only the largest scales must therefore account for both momentum and heat transport by unresolved motions. Eddy-viscosity and eddy-diffusivity closures prescribe stress--strain and flux--gradient alignment, restricting the interactions they can represent.
 
-We investigate interpretable subgrid closures in two-dimensional Rayleigh--B\'enard convection using symmetry-constrained sparse regression. Using filtered velocity and buoyancy fields from direct numerical simulations, we seek compact expressions for the unresolved stress and buoyancy flux. We aim to assess these models against nonlinear gradient expansions through closure accuracy and local and mean kinetic-energy and scalar-variance transfer across filter widths. We also investigate how uniform-grid interpolation and integration on native Chebyshev nodes affect weak-form equation recovery.
+We examine how resolved velocity and buoyancy gradients encode subgrid transport in two-dimensional convection. Using filtered direct numerical simulation data, we apply symmetry-constrained equation discovery to infer interpretable expressions for the subgrid stress and buoyancy flux without imposing these alignment assumptions. The constraints enforce the tensor transformation properties of the candidate terms.
 
-The goal is to develop physically interpretable models of unresolved momentum and heat transport for large-eddy simulations of buoyancy-driven flows, while identifying the strengths and limitations of gradient-based closures.
+Preliminary results recover terms in the nonlinear gradient expansion. These terms describe products of resolved-field gradients, identifying a contribution to subgrid transport that is not restricted to the alignment assumed in scalar eddy-viscosity and eddy-diffusivity models.
 \end{abstract}
 
 \end{document}
