@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "li": 0.0928002835614184,
+  "delta_over_li": [
+    0.05,
+    0.2,
+    0.4,
+    0.6000000000000001,
+    0.8,
+    1.0
+  ],
+  "delta": [
+    0.00464001417807092,
+    0.01856005671228368,
+    0.03712011342456736,
+    0.055680170136851045,
+    0.07424022684913471,
+    0.0928002835614184
+  ],
+  "delta_dx": [
+    4.751374518344622,
+    19.005498073378487,
+    38.01099614675697,
+    57.01649422013547,
+    76.02199229351395,
+    95.02749036689244
+  ],
+  "dx": 0.0009765625,
+  "dy": 0.0006514657980456026,
+  "data": {
+    "path": "/storage/scratch1/2/ashelestov3/preprocessed_paper_data.npz",
+    "size_bytes": 19730238933,
+    "mtime_ns": 1771614761000000000
+  },
+  "velocity_member_sha256": {
+    "V.npy": "f01b9fc399cc0e9940029c7fa79dac9943ed45b5f4dc27924c6c82d9f07932ac",
+    "U.npy": "2b5d996610d3c5bd5123c5ff533a63b62cbb1b61d791587d66f74b8ef7c7519f"
+  },
+  "time_start": 0,
+  "time_stop": 101,
+  "alpha": 3.0,
+  "measurement_support": {
+    "x": "full periodic x",
+    "y_wall_margin_points": 50
+  },
+  "requested_max_delta_over_li": 1.0,
+  "support_limited": false,
+  "note": "Five equally spaced positive widths plus exact Delta/li=0.05 (deduplicated); no rounding to integer grid spacings. Convection adaptation of Eq. (3.3)."
+}

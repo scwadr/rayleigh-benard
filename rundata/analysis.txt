@@ -1,0 +1,18 @@
+Figure 2-style measurements on convection data: closure accuracy A, flux accuracy A, mean modeled/reference flux.
+Not a reproduction of paper F1/F2: these are different flows, models and grid/filter conventions.
+Paper Fig. 2 compares NGMR, NGM4, similarity, dynamic mixed and dynamic Smagorinsky; only NGM4 matches a model here.
+The existing fine-grid edge-padded Gaussian convention is retained for comparability; no coarse-grid spectral projection.
+The paper axis is Delta/ell_i (Eq. 3.3); --scale-plan supplies a measured convection value, while a bare reference_length is user-provided.
+A is the ratio of integrated moments, not the average of per-frame accuracy.
+All archived moments, trapezoidal time weights and JSON metrics were checked for consistency.
+Each panel set holds its requested predictor/correction budget fixed and varies physical Delta (or Delta/L with explicit L).
+Only equal-budget trace/STF pairs are drawn; P denotes general predictors and N denotes frozen-baseline corrections.
+All candidates, including mixed-budget pairs, are preserved in metrics.csv and source archives.
+Candidates are refitted at each width; term support and the original fit crop may change.
+Discovered residuals are not assumed to equal the prescribed Hessian correction.
+General-discovery plots compare equal requested predictor counts (forced target excluded); tau uses the same budget for trace and STF.
+General discovered closures are fitted directly to measured tau/phi, without a frozen gradient baseline.
+These are discovery-data fits, not independent validation or thesis-selected models.
+Prescribed phi is the analogous Gaussian scalar expansion; the reference paper studies stress.
+Colors/layout match the next-cell paper-style analysis; markers identify evaluated widths.
+Undefined ratios and missing candidates are gaps; no interpolation or best-model selection.

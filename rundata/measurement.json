@@ -1,0 +1,884 @@
+{
+  "schema_version": 1,
+  "config": {
+    "data_path": "/storage/scratch1/2/ashelestov3/preprocessed_paper_data.npz",
+    "run_dir": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/measure_20261016T162945_lugyMz1x/li_20261016T163005.117984Z_ba55bfd5",
+    "time_start": 0,
+    "time_stop": null,
+    "wall_margin": 50,
+    "max_delta_li": 1.0,
+    "alpha": 3.0,
+    "workers": 8,
+    "notebook_sha256": "43a8cee3d8967b56e643cb4368a8c747ac9e60b17f804398fbf03e9cdc9bf4be"
+  },
+  "li": 0.0928002835614184,
+  "definition": "sqrt(integral <||(du_i du_j)/12||_F> dt / integral <||(d2u_i d2u_j)/288||_F> dt)",
+  "derivatives": "sixth-order centered finite differences; periodic x; fixed interior y; mixed Hessians counted twice",
+  "time_averaging": "trapezoidal weights, all selected times; ratio after spatial/time averaging",
+  "validation": "measurement on unfiltered interpolated convection velocity; not the original F1/F2 flows; no derivative-convergence study",
+  "data": {
+    "path": "/storage/scratch1/2/ashelestov3/preprocessed_paper_data.npz",
+    "size_bytes": 19730238933,
+    "mtime_ns": 1771614761000000000
+  },
+  "velocity_member_sha256": {
+    "V.npy": "f01b9fc399cc0e9940029c7fa79dac9943ed45b5f4dc27924c6c82d9f07932ac",
+    "U.npy": "2b5d996610d3c5bd5123c5ff533a63b62cbb1b61d791587d66f74b8ef7c7519f"
+  },
+  "sources": {
+    "run_filter_sweep.py": {
+      "archive_file": "source_0_run_filter_sweep.py",
+      "sha256": "af1e10f8098dc199c3b154281624dd6579f0f674d77787f9e1a26c0f0b1ab49a"
+    },
+    "slurm/measure_li.sbatch": {
+      "archive_file": "source_1_measure_li.sbatch",
+      "sha256": "a4c45c281127bbbe7d5899d19d7f557493949fb05cf55908308e21083ce16e54"
+    },
+    "dedalus/paper-test/rayleigh_benard-1024_setup.py": {
+      "archive_file": "source_2_rayleigh_benard-1024_setup.py",
+      "sha256": "f2a83db949ac222b5d2ce61de30b72012e7b756ccc66c2d4522e221e500ed850"
+    },
+    "dedalus/paper-test/rayleigh_benard-setup.py": {
+      "archive_file": "source_3_rayleigh_benard-setup.py",
+      "sha256": "f4e8f1dacf7facb2831e95b94a71b86cfb06cec37873f132330ab6e2e8689c83"
+    },
+    "dedalus/paper-test/rayleigh_benard-stabilize.py": {
+      "archive_file": "source_4_rayleigh_benard-stabilize.py",
+      "sha256": "4e57906a2b6a73c10df7bbbe3a1ada020dc9a9d3af0768dab9d65ccc27e5e59c"
+    },
+    "dedalus/paper-test/rayleigh_benard.py": {
+      "archive_file": "source_5_rayleigh_benard.py",
+      "sha256": "d75f3e183a3b530df5936e29fac1c1a70cfd6d31804fcaac123811dab08c4dc1"
+    },
+    "dedalus/paper-test/rayleigh_benard_1024.py": {
+      "archive_file": "source_6_rayleigh_benard_1024.py",
+      "sha256": "bd38e419049f7236d128f37c075d8a6d59995c5d74d4735e84ccd7452cd1f3b4"
+    }
+  },
+  "git": {
+    "commit": "61cf03ebbf0b382bc723eea311b36452cf107e14",
+    "status": ""
+  },
+  "dedalus": {
+    "source_confirmed_by_user": false,
+    "configurations": {
+      "dedalus/paper-test/rayleigh_benard-1024_setup.py": {
+        "parameters": [
+          {
+            "name": "Lx",
+            "line": 37,
+            "expression": "4",
+            "static_value": 4
+          },
+          {
+            "name": "Lz",
+            "line": 37,
+            "expression": "1",
+            "static_value": 1
+          },
+          {
+            "name": "Nx",
+            "line": 38,
+            "expression": "1024",
+            "static_value": 1024
+          },
+          {
+            "name": "Nz",
+            "line": 38,
+            "expression": "384",
+            "static_value": 384
+          },
+          {
+            "name": "Rayleigh",
+            "line": 39,
+            "expression": "100000000.0",
+            "static_value": 100000000.0
+          },
+          {
+            "name": "Prandtl",
+            "line": 40,
+            "expression": "1",
+            "static_value": 1
+          },
+          {
+            "name": "dealias",
+            "line": 41,
+            "expression": "3 / 2",
+            "static_value": 1.5
+          },
+          {
+            "name": "stop_sim_time",
+            "line": 42,
+            "expression": "51",
+            "static_value": 51
+          },
+          {
+            "name": "timestepper",
+            "line": 43,
+            "expression": "d3.RK443",
+            "static_value": null
+          },
+          {
+            "name": "max_timestep",
+            "line": 44,
+            "expression": "0.01",
+            "static_value": 0.01
+          },
+          {
+            "name": "dtype",
+            "line": 45,
+            "expression": "np.float64",
+            "static_value": null
+          },
+          {
+            "name": "kappa",
+            "line": 64,
+            "expression": "(Rayleigh * Prandtl) ** (-1 / 2)",
+            "static_value": 0.0001
+          },
+          {
+            "name": "nu",
+            "line": 65,
+            "expression": "(Rayleigh / Prandtl) ** (-1 / 2)",
+            "static_value": 0.0001
+          }
+        ],
+        "equations_bases_initialization_and_output": [
+          {
+            "line": 50,
+            "expression": "d3.RealFourier(coords['x'], size=Nx, bounds=(0, Lx), dealias=dealias)"
+          },
+          {
+            "line": 51,
+            "expression": "d3.ChebyshevT(coords['z'], size=Nz, bounds=(0, Lz), dealias=dealias)"
+          },
+          {
+            "line": 83,
+            "expression": "problem.add_equation('trace(grad_u) + tau_p = 0')"
+          },
+          {
+            "line": 84,
+            "expression": "problem.add_equation('dt(b) - kappa*div(grad_b) + lift(tau_b2) = - u@grad(b)')"
+          },
+          {
+            "line": 85,
+            "expression": "problem.add_equation('dt(u) - nu*div(grad_u) + grad(p) - b*ez + lift(tau_u2) = - u@grad(u)')"
+          },
+          {
+            "line": 88,
+            "expression": "problem.add_equation('b(z=0) = Lz')"
+          },
+          {
+            "line": 89,
+            "expression": "problem.add_equation('b(z=Lz) = 0')"
+          },
+          {
+            "line": 92,
+            "expression": "problem.add_equation('u_z(z=0) = 0')"
+          },
+          {
+            "line": 93,
+            "expression": "problem.add_equation('u_z(z=Lz) = 0')"
+          },
+          {
+            "line": 96,
+            "expression": "problem.add_equation('dzu_x(z=0) = 0')"
+          },
+          {
+            "line": 97,
+            "expression": "problem.add_equation('dzu_x(z=Lz) = 0')"
+          },
+          {
+            "line": 99,
+            "expression": "problem.add_equation('integ(p) = 0')"
+          },
+          {
+            "line": 106,
+            "expression": "b.fill_random('g', seed=42, distribution='normal', scale=1e-05)"
+          },
+          {
+            "line": 118,
+            "expression": "solver.evaluator.add_file_handler('/storage/scratch1/2/ashelestov3/checks_1024', sim_dt=1, max_writes=1, mode='overwrite')"
+          },
+          {
+            "line": 124,
+            "expression": "d3.CFL(solver, initial_dt=max_timestep, cadence=10, safety=0.5, threshold=0.05, max_change=1.5, min_change=0.5, max_dt=max_timestep)"
+          },
+          {
+            "line": 142,
+            "expression": "solver.step(timestep)"
+          }
+        ],
+        "effective_time_control_statements": [
+          {
+            "line": 103,
+            "expression": "solver.stop_sim_time = stop_sim_time"
+          },
+          {
+            "line": 140,
+            "expression": "timestep = CFL.compute_timestep()"
+          }
+        ],
+        "provenance": "configuration parsed from current source; not a historical execution log"
+      },
+      "dedalus/paper-test/rayleigh_benard-setup.py": {
+        "parameters": [
+          {
+            "name": "Lx",
+            "line": 37,
+            "expression": "4",
+            "static_value": 4
+          },
+          {
+            "name": "Lz",
+            "line": 37,
+            "expression": "1",
+            "static_value": 1
+          },
+          {
+            "name": "Nx",
+            "line": 38,
+            "expression": "2048",
+            "static_value": 2048
+          },
+          {
+            "name": "Nz",
+            "line": 38,
+            "expression": "768",
+            "static_value": 768
+          },
+          {
+            "name": "Rayleigh",
+            "line": 39,
+            "expression": "100000000.0",
+            "static_value": 100000000.0
+          },
+          {
+            "name": "Prandtl",
+            "line": 40,
+            "expression": "1",
+            "static_value": 1
+          },
+          {
+            "name": "dealias",
+            "line": 41,
+            "expression": "3 / 2",
+            "static_value": 1.5
+          },
+          {
+            "name": "stop_sim_time",
+            "line": 42,
+            "expression": "51",
+            "static_value": 51
+          },
+          {
+            "name": "timestepper",
+            "line": 43,
+            "expression": "d3.RK443",
+            "static_value": null
+          },
+          {
+            "name": "max_timestep",
+            "line": 44,
+            "expression": "0.01",
+            "static_value": 0.01
+          },
+          {
+            "name": "dtype",
+            "line": 45,
+            "expression": "np.float64",
+            "static_value": null
+          },
+          {
+            "name": "kappa",
+            "line": 64,
+            "expression": "(Rayleigh * Prandtl) ** (-1 / 2)",
+            "static_value": 0.0001
+          },
+          {
+            "name": "nu",
+            "line": 65,
+            "expression": "(Rayleigh / Prandtl) ** (-1 / 2)",
+            "static_value": 0.0001
+          }
+        ],
+        "equations_bases_initialization_and_output": [
+          {
+            "line": 50,
+            "expression": "d3.RealFourier(coords['x'], size=Nx, bounds=(0, Lx), dealias=dealias)"
+          },
+          {
+            "line": 51,
+            "expression": "d3.ChebyshevT(coords['z'], size=Nz, bounds=(0, Lz), dealias=dealias)"
+          },
+          {
+            "line": 83,
+            "expression": "problem.add_equation('trace(grad_u) + tau_p = 0')"
+          },
+          {
+            "line": 84,
+            "expression": "problem.add_equation('dt(b) - kappa*div(grad_b) + lift(tau_b2) = - u@grad(b)')"
+          },
+          {
+            "line": 85,
+            "expression": "problem.add_equation('dt(u) - nu*div(grad_u) + grad(p) - b*ez + lift(tau_u2) = - u@grad(u)')"
+          },
+          {
+            "line": 88,
+            "expression": "problem.add_equation('b(z=0) = Lz')"
+          },
+          {
+            "line": 89,
+            "expression": "problem.add_equation('b(z=Lz) = 0')"
+          },
+          {
+            "line": 92,
+            "expression": "problem.add_equation('u_z(z=0) = 0')"
+          },
+          {
+            "line": 93,
+            "expression": "problem.add_equation('u_z(z=Lz) = 0')"
+          },
+          {
+            "line": 96,
+            "expression": "problem.add_equation('dzu_x(z=0) = 0')"
+          },
+          {
+            "line": 97,
+            "expression": "problem.add_equation('dzu_x(z=Lz) = 0')"
+          },
+          {
+            "line": 99,
+            "expression": "problem.add_equation('integ(p) = 0')"
+          },
+          {
+            "line": 106,
+            "expression": "b.fill_random('g', seed=42, distribution='normal', scale=1e-05)"
+          },
+          {
+            "line": 118,
+            "expression": "solver.evaluator.add_file_handler('/storage/scratch1/2/ashelestov3/checks_paper', sim_dt=1, max_writes=1, mode='overwrite')"
+          },
+          {
+            "line": 124,
+            "expression": "d3.CFL(solver, initial_dt=max_timestep, cadence=10, safety=0.5, threshold=0.05, max_change=1.5, min_change=0.5, max_dt=max_timestep)"
+          },
+          {
+            "line": 142,
+            "expression": "solver.step(timestep)"
+          }
+        ],
+        "effective_time_control_statements": [
+          {
+            "line": 103,
+            "expression": "solver.stop_sim_time = stop_sim_time"
+          },
+          {
+            "line": 140,
+            "expression": "timestep = CFL.compute_timestep()"
+          }
+        ],
+        "provenance": "configuration parsed from current source; not a historical execution log"
+      },
+      "dedalus/paper-test/rayleigh_benard-stabilize.py": {
+        "parameters": [
+          {
+            "name": "Lx",
+            "line": 23,
+            "expression": "4",
+            "static_value": 4
+          },
+          {
+            "name": "Lz",
+            "line": 23,
+            "expression": "1",
+            "static_value": 1
+          },
+          {
+            "name": "Nx",
+            "line": 24,
+            "expression": "4096",
+            "static_value": 4096
+          },
+          {
+            "name": "Nz",
+            "line": 24,
+            "expression": "1536",
+            "static_value": 1536
+          },
+          {
+            "name": "Rayleigh",
+            "line": 27,
+            "expression": "100000000.0",
+            "static_value": 100000000.0
+          },
+          {
+            "name": "Prandtl",
+            "line": 28,
+            "expression": "1",
+            "static_value": 1
+          },
+          {
+            "name": "dealias",
+            "line": 29,
+            "expression": "3 / 2",
+            "static_value": 1.5
+          },
+          {
+            "name": "stop_sim_time",
+            "line": 30,
+            "expression": "0.05",
+            "static_value": 0.05
+          },
+          {
+            "name": "timestepper",
+            "line": 31,
+            "expression": "d3.RK443",
+            "static_value": null
+          },
+          {
+            "name": "max_timestep",
+            "line": 32,
+            "expression": "0.0001",
+            "static_value": 0.0001
+          },
+          {
+            "name": "dtype",
+            "line": 33,
+            "expression": "np.float64",
+            "static_value": null
+          },
+          {
+            "name": "kappa",
+            "line": 54,
+            "expression": "(Rayleigh * Prandtl) ** (-1 / 2)",
+            "static_value": 0.0001
+          },
+          {
+            "name": "nu",
+            "line": 55,
+            "expression": "(Rayleigh / Prandtl) ** (-1 / 2)",
+            "static_value": 0.0001
+          }
+        ],
+        "equations_bases_initialization_and_output": [
+          {
+            "line": 38,
+            "expression": "d3.RealFourier(coords['x'], size=Nx, bounds=(0, Lx), dealias=dealias)"
+          },
+          {
+            "line": 39,
+            "expression": "d3.ChebyshevT(coords['z'], size=Nz, bounds=(0, Lz), dealias=dealias)"
+          },
+          {
+            "line": 112,
+            "expression": "problem.add_equation('trace(grad_u) + tau_p = 0')"
+          },
+          {
+            "line": 113,
+            "expression": "problem.add_equation('dt(b) - kappa*div(grad_b) + lift(tau_b2) = - u@grad(b)')"
+          },
+          {
+            "line": 114,
+            "expression": "problem.add_equation('dt(u) - nu*div(grad_u) + grad(p) - b*ez + lift(tau_u2) = - u@grad(u)')"
+          },
+          {
+            "line": 117,
+            "expression": "problem.add_equation('b(z=0) = Lz')"
+          },
+          {
+            "line": 118,
+            "expression": "problem.add_equation('b(z=Lz) = 0')"
+          },
+          {
+            "line": 121,
+            "expression": "problem.add_equation('u_z(z=0) = 0')"
+          },
+          {
+            "line": 122,
+            "expression": "problem.add_equation('u_z(z=Lz) = 0')"
+          },
+          {
+            "line": 125,
+            "expression": "problem.add_equation('dzu_x(z=0) = 0')"
+          },
+          {
+            "line": 126,
+            "expression": "problem.add_equation('dzu_x(z=Lz) = 0')"
+          },
+          {
+            "line": 128,
+            "expression": "problem.add_equation('integ(p) = 0')"
+          },
+          {
+            "line": 137,
+            "expression": "d3.CFL(solver, initial_dt=max_timestep, cadence=10, safety=0.5, threshold=0.05, max_change=1.5, min_change=0.5, max_dt=max_timestep)"
+          },
+          {
+            "line": 181,
+            "expression": "solver.evaluator.add_file_handler(output_dir, max_writes=1)"
+          },
+          {
+            "line": 166,
+            "expression": "solver.step(timestep)"
+          }
+        ],
+        "effective_time_control_statements": [
+          {
+            "line": 134,
+            "expression": "solver.stop_sim_time = stop_sim_time"
+          },
+          {
+            "line": 149,
+            "expression": "solver.stop_sim_time = 0.05"
+          },
+          {
+            "line": 165,
+            "expression": "timestep = CFL.compute_timestep()"
+          }
+        ],
+        "provenance": "configuration parsed from current source; not a historical execution log"
+      },
+      "dedalus/paper-test/rayleigh_benard.py": {
+        "parameters": [
+          {
+            "name": "Lx",
+            "line": 37,
+            "expression": "4",
+            "static_value": 4
+          },
+          {
+            "name": "Lz",
+            "line": 37,
+            "expression": "1",
+            "static_value": 1
+          },
+          {
+            "name": "Nx",
+            "line": 38,
+            "expression": "4096",
+            "static_value": 4096
+          },
+          {
+            "name": "Nz",
+            "line": 38,
+            "expression": "1536",
+            "static_value": 1536
+          },
+          {
+            "name": "Rayleigh",
+            "line": 39,
+            "expression": "100000000.0",
+            "static_value": 100000000.0
+          },
+          {
+            "name": "Prandtl",
+            "line": 40,
+            "expression": "1",
+            "static_value": 1
+          },
+          {
+            "name": "dealias",
+            "line": 41,
+            "expression": "3 / 2",
+            "static_value": 1.5
+          },
+          {
+            "name": "stop_sim_time",
+            "line": 42,
+            "expression": "52.1",
+            "static_value": 52.1
+          },
+          {
+            "name": "timestepper",
+            "line": 43,
+            "expression": "d3.RK443",
+            "static_value": null
+          },
+          {
+            "name": "max_timestep",
+            "line": 44,
+            "expression": "0.01",
+            "static_value": 0.01
+          },
+          {
+            "name": "dtype",
+            "line": 45,
+            "expression": "np.float64",
+            "static_value": null
+          },
+          {
+            "name": "kappa",
+            "line": 64,
+            "expression": "(Rayleigh * Prandtl) ** (-1 / 2)",
+            "static_value": 0.0001
+          },
+          {
+            "name": "nu",
+            "line": 65,
+            "expression": "(Rayleigh / Prandtl) ** (-1 / 2)",
+            "static_value": 0.0001
+          },
+          {
+            "name": "dt",
+            "line": 118,
+            "expression": "1 / 100 * 0.0024039",
+            "static_value": 2.4039e-05
+          }
+        ],
+        "equations_bases_initialization_and_output": [
+          {
+            "line": 50,
+            "expression": "d3.RealFourier(coords['x'], size=Nx, bounds=(0, Lx), dealias=dealias)"
+          },
+          {
+            "line": 51,
+            "expression": "d3.ChebyshevT(coords['z'], size=Nz, bounds=(0, Lz), dealias=dealias)"
+          },
+          {
+            "line": 83,
+            "expression": "problem.add_equation('trace(grad_u) + tau_p = 0')"
+          },
+          {
+            "line": 84,
+            "expression": "problem.add_equation('dt(b) - kappa*div(grad_b) + lift(tau_b2) = - u@grad(b)')"
+          },
+          {
+            "line": 85,
+            "expression": "problem.add_equation('dt(u) - nu*div(grad_u) + grad(p) - b*ez + lift(tau_u2) = - u@grad(u)')"
+          },
+          {
+            "line": 88,
+            "expression": "problem.add_equation('b(z=0) = Lz')"
+          },
+          {
+            "line": 89,
+            "expression": "problem.add_equation('b(z=Lz) = 0')"
+          },
+          {
+            "line": 92,
+            "expression": "problem.add_equation('u_z(z=0) = 0')"
+          },
+          {
+            "line": 93,
+            "expression": "problem.add_equation('u_z(z=Lz) = 0')"
+          },
+          {
+            "line": 96,
+            "expression": "problem.add_equation('dzu_x(z=0) = 0')"
+          },
+          {
+            "line": 97,
+            "expression": "problem.add_equation('dzu_x(z=Lz) = 0')"
+          },
+          {
+            "line": 99,
+            "expression": "problem.add_equation('integ(p) = 0')"
+          },
+          {
+            "line": 106,
+            "expression": "solver.load_state('/storage/scratch1/2/ashelestov3/check_paper_stabilized/check_paper_stabilized_s1.h5')"
+          },
+          {
+            "line": 109,
+            "expression": "solver.evaluator.add_file_handler('/storage/scratch1/2/ashelestov3/snaps_paper', iter=1, max_writes=2000000000.0)"
+          },
+          {
+            "line": 123,
+            "expression": "d3.CFL(solver, initial_dt=max_timestep, cadence=10, safety=0.1, threshold=0.05, max_change=1.5, min_change=0.5, max_dt=max_timestep)"
+          },
+          {
+            "line": 139,
+            "expression": "solver.step(timestep)"
+          }
+        ],
+        "effective_time_control_statements": [
+          {
+            "line": 103,
+            "expression": "solver.stop_sim_time = stop_sim_time"
+          },
+          {
+            "line": 120,
+            "expression": "solver.stop_sim_time = solver.sim_time + dt * 100"
+          },
+          {
+            "line": 137,
+            "expression": "timestep = dt"
+          }
+        ],
+        "provenance": "configuration parsed from current source; not a historical execution log"
+      },
+      "dedalus/paper-test/rayleigh_benard_1024.py": {
+        "parameters": [
+          {
+            "name": "Lx",
+            "line": 37,
+            "expression": "4",
+            "static_value": 4
+          },
+          {
+            "name": "Lz",
+            "line": 37,
+            "expression": "1",
+            "static_value": 1
+          },
+          {
+            "name": "Nx",
+            "line": 38,
+            "expression": "1024",
+            "static_value": 1024
+          },
+          {
+            "name": "Nz",
+            "line": 38,
+            "expression": "768",
+            "static_value": 768
+          },
+          {
+            "name": "Rayleigh",
+            "line": 39,
+            "expression": "100000000.0",
+            "static_value": 100000000.0
+          },
+          {
+            "name": "Prandtl",
+            "line": 40,
+            "expression": "1",
+            "static_value": 1
+          },
+          {
+            "name": "dealias",
+            "line": 41,
+            "expression": "3 / 2",
+            "static_value": 1.5
+          },
+          {
+            "name": "stop_sim_time",
+            "line": 42,
+            "expression": "52.1",
+            "static_value": 52.1
+          },
+          {
+            "name": "timestepper",
+            "line": 43,
+            "expression": "d3.RK443",
+            "static_value": null
+          },
+          {
+            "name": "max_timestep",
+            "line": 44,
+            "expression": "0.01",
+            "static_value": 0.01
+          },
+          {
+            "name": "dtype",
+            "line": 45,
+            "expression": "np.float64",
+            "static_value": null
+          },
+          {
+            "name": "kappa",
+            "line": 64,
+            "expression": "(Rayleigh * Prandtl) ** (-1 / 2)",
+            "static_value": 0.0001
+          },
+          {
+            "name": "nu",
+            "line": 65,
+            "expression": "(Rayleigh / Prandtl) ** (-1 / 2)",
+            "static_value": 0.0001
+          },
+          {
+            "name": "dt",
+            "line": 118,
+            "expression": "0.001",
+            "static_value": 0.001
+          }
+        ],
+        "equations_bases_initialization_and_output": [
+          {
+            "line": 50,
+            "expression": "d3.RealFourier(coords['x'], size=Nx, bounds=(0, Lx), dealias=dealias)"
+          },
+          {
+            "line": 51,
+            "expression": "d3.ChebyshevT(coords['z'], size=Nz, bounds=(0, Lz), dealias=dealias)"
+          },
+          {
+            "line": 83,
+            "expression": "problem.add_equation('trace(grad_u) + tau_p = 0')"
+          },
+          {
+            "line": 84,
+            "expression": "problem.add_equation('dt(b) - kappa*div(grad_b) + lift(tau_b2) = - u@grad(b)')"
+          },
+          {
+            "line": 85,
+            "expression": "problem.add_equation('dt(u) - nu*div(grad_u) + grad(p) - b*ez + lift(tau_u2) = - u@grad(u)')"
+          },
+          {
+            "line": 88,
+            "expression": "problem.add_equation('b(z=0) = Lz')"
+          },
+          {
+            "line": 89,
+            "expression": "problem.add_equation('b(z=Lz) = 0')"
+          },
+          {
+            "line": 92,
+            "expression": "problem.add_equation('u_z(z=0) = 0')"
+          },
+          {
+            "line": 93,
+            "expression": "problem.add_equation('u_z(z=Lz) = 0')"
+          },
+          {
+            "line": 96,
+            "expression": "problem.add_equation('dzu_x(z=0) = 0')"
+          },
+          {
+            "line": 97,
+            "expression": "problem.add_equation('dzu_x(z=Lz) = 0')"
+          },
+          {
+            "line": 99,
+            "expression": "problem.add_equation('integ(p) = 0')"
+          },
+          {
+            "line": 106,
+            "expression": "solver.load_state('/storage/scratch1/2/ashelestov3/checks_1024/checks_1024_s51.h5')"
+          },
+          {
+            "line": 109,
+            "expression": "solver.evaluator.add_file_handler('/storage/scratch1/2/ashelestov3/snaps_t', iter=10, max_writes=2000000000.0)"
+          },
+          {
+            "line": 123,
+            "expression": "d3.CFL(solver, initial_dt=max_timestep, cadence=10, safety=0.1, threshold=0.05, max_change=1.5, min_change=0.5, max_dt=max_timestep)"
+          },
+          {
+            "line": 139,
+            "expression": "solver.step(timestep)"
+          }
+        ],
+        "effective_time_control_statements": [
+          {
+            "line": 103,
+            "expression": "solver.stop_sim_time = stop_sim_time"
+          },
+          {
+            "line": 120,
+            "expression": "solver.stop_sim_time = solver.sim_time + 0.5"
+          },
+          {
+            "line": 137,
+            "expression": "timestep = dt"
+          }
+        ],
+        "provenance": "configuration parsed from current source; not a historical execution log"
+      }
+    }
+  },
+  "scale_plan_sha256": "a60145c5ad2f1f2017db12820f348753d8d90f625f7100b1b8efd4d0d2a792f4",
+  "elapsed_seconds": 36.34899242897518
+}

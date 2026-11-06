@@ -1,0 +1,3300 @@
+{
+  "config": {
+    "root": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830",
+    "reference_length": 0.0928002835614184,
+    "expected_scales": [
+      4.751374518344622,
+      19.005498073378487,
+      38.01099614675697,
+      57.01649422013547,
+      76.02199229351395,
+      95.02749036689244
+    ],
+    "correction_budgets": null,
+    "prescribed_only": false,
+    "discovery_benchmarks": true,
+    "verify_only": false,
+    "scale_plan": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/measure_20261016T162945_lugyMz1x/li_20261016T163005.117984Z_ba55bfd5/scale_plan.json"
+  },
+  "scale_plan": {
+    "schema_version": 1,
+    "li": 0.0928002835614184,
+    "delta_over_li": [
+      0.05,
+      0.2,
+      0.4,
+      0.6000000000000001,
+      0.8,
+      1.0
+    ],
+    "delta": [
+      0.00464001417807092,
+      0.01856005671228368,
+      0.03712011342456736,
+      0.055680170136851045,
+      0.07424022684913471,
+      0.0928002835614184
+    ],
+    "delta_dx": [
+      4.751374518344622,
+      19.005498073378487,
+      38.01099614675697,
+      57.01649422013547,
+      76.02199229351395,
+      95.02749036689244
+    ],
+    "dx": 0.0009765625,
+    "dy": 0.0006514657980456026,
+    "data": {
+      "path": "/storage/scratch1/2/ashelestov3/preprocessed_paper_data.npz",
+      "size_bytes": 19730238933,
+      "mtime_ns": 1771614761000000000
+    },
+    "velocity_member_sha256": {
+      "V.npy": "f01b9fc399cc0e9940029c7fa79dac9943ed45b5f4dc27924c6c82d9f07932ac",
+      "U.npy": "2b5d996610d3c5bd5123c5ff533a63b62cbb1b61d791587d66f74b8ef7c7519f"
+    },
+    "time_start": 0,
+    "time_stop": 101,
+    "alpha": 3.0,
+    "measurement_support": {
+      "x": "full periodic x",
+      "y_wall_margin_points": 50
+    },
+    "requested_max_delta_over_li": 1.0,
+    "support_limited": false,
+    "note": "Five equally spaced positive widths plus exact Delta/li=0.05 (deduplicated); no rounding to integer grid spacings. Convection adaptation of Eq. (3.3)."
+  },
+  "sources": [
+    {
+      "delta": 0.00464001417807092,
+      "delta_dx": 4.751374518344622,
+      "archive": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T182625.759221Z_delta_dx_4.75137_6ac51d12/flux_20261016T184915.785360Z_604592ae/flux.json",
+      "sha256": {
+        "flux.json": "260f5152d809eb609132c2b6b8fd447819aaf720fb98b1b7b8fa8a72d59f9f5a",
+        "flux_moments.npz": "9b327f4b1bc801563a353dabf3f5f1fe466fd1f1c3e140a0e50c9b2b21c5fa9b"
+      }
+    },
+    {
+      "delta": 0.01856005671228368,
+      "delta_dx": 19.005498073378487,
+      "archive": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T185013.536295Z_delta_dx_19.0055_1b7aff24/flux_20261016T191228.633342Z_65cd1758/flux.json",
+      "sha256": {
+        "flux.json": "5523b2be9f1c039bd6f37938a4aa0c10613435a2815937d3f2481a3cc363101e",
+        "flux_moments.npz": "e15b92df6eeaf5c2a12aab06ae037358157057d60fca5c4111a2e806d03ed923"
+      }
+    },
+    {
+      "delta": 0.03712011342456736,
+      "delta_dx": 38.01099614675697,
+      "archive": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T191917.450966Z_delta_dx_38.011_be263842/flux_20261016T194105.640070Z_3c559203/flux.json",
+      "sha256": {
+        "flux.json": "28967743932dc5623e42391091794ed9f01e4c79562d1b8d58b4b87db29f4044",
+        "flux_moments.npz": "ef2aa2b74d32754dd8aef0c39cb0681a41d416d4c6f1594bc00b91875591a7d8"
+      }
+    },
+    {
+      "delta": 0.055680170136851045,
+      "delta_dx": 57.01649422013547,
+      "archive": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T194123.091260Z_delta_dx_57.0165_7b6bd1e7/flux_20261016T200327.828091Z_9002cb2e/flux.json",
+      "sha256": {
+        "flux.json": "09a87059127c04ed397e4033fd6e5c296b3eab0a6f5b30abdcfad5542bcf3bb2",
+        "flux_moments.npz": "927027401757f6cbeb88b2d68ea21efb52dcbec933e76446dbcdc2982389834c"
+      }
+    },
+    {
+      "delta": 0.07424022684913471,
+      "delta_dx": 76.02199229351395,
+      "archive": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T201059.114901Z_delta_dx_76.022_7341f05c/flux_20261016T203147.283160Z_53ce3c2d/flux.json",
+      "sha256": {
+        "flux.json": "61758053cea047a6d8b5efc62bb7518eb66bdf418a70ced92cd3ba36e802607a",
+        "flux_moments.npz": "e314f7286ed294c9f78e417d129dcb21450419a38cbc207592873f5efa54d7b9"
+      }
+    },
+    {
+      "delta": 0.0928002835614184,
+      "delta_dx": 95.02749036689244,
+      "archive": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T203835.412909Z_delta_dx_95.0275_416226d0/flux_20261016T205851.780200Z_aa6f9521/flux.json",
+      "sha256": {
+        "flux.json": "a7d5d477cab255fb90e4a4384e09b241a926df384b4a67c01ce7f8435f2e15ad",
+        "flux_moments.npz": "4e0da3634b61b3066ec52f5f8f67589bfdc5865c7814c0f43e9254c0a86e4ac2"
+      }
+    }
+  ],
+  "skipped": [],
+  "audits": [
+    {
+      "path": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T182625.759221Z_delta_dx_4.75137_6ac51d12",
+      "delta_dx": 4.751374518344622,
+      "status": "archive integrity passed",
+      "batch_execution_verified": true,
+      "limitation": "Stored moments are checked, not recomputed from DNS; input has path/stat identity only."
+    },
+    {
+      "path": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T185013.536295Z_delta_dx_19.0055_1b7aff24",
+      "delta_dx": 19.005498073378487,
+      "status": "archive integrity passed",
+      "batch_execution_verified": true,
+      "limitation": "Stored moments are checked, not recomputed from DNS; input has path/stat identity only."
+    },
+    {
+      "path": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T191917.450966Z_delta_dx_38.011_be263842",
+      "delta_dx": 38.01099614675697,
+      "status": "archive integrity passed",
+      "batch_execution_verified": true,
+      "limitation": "Stored moments are checked, not recomputed from DNS; input has path/stat identity only."
+    },
+    {
+      "path": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T194123.091260Z_delta_dx_57.0165_7b6bd1e7",
+      "delta_dx": 57.01649422013547,
+      "status": "archive integrity passed",
+      "batch_execution_verified": true,
+      "limitation": "Stored moments are checked, not recomputed from DNS; input has path/stat identity only."
+    },
+    {
+      "path": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T201059.114901Z_delta_dx_76.022_7341f05c",
+      "delta_dx": 76.02199229351395,
+      "status": "archive integrity passed",
+      "batch_execution_verified": true,
+      "limitation": "Stored moments are checked, not recomputed from DNS; input has path/stat identity only."
+    },
+    {
+      "path": "/storage/scratch1/2/ashelestov3/rayleigh-benard/filter_sweeps/discover_20261016T163601_76qdFiDZ/sweep_14103830/20261016T203835.412909Z_delta_dx_95.0275_416226d0",
+      "delta_dx": 95.02749036689244,
+      "status": "archive integrity passed",
+      "batch_execution_verified": true,
+      "limitation": "Stored moments are checked, not recomputed from DNS; input has path/stat identity only."
+    }
+  ],
+  "notes": [
+    "Figure 2-style measurements on convection data: closure accuracy A, flux accuracy A, mean modeled/reference flux.",
+    "Not a reproduction of paper F1/F2: these are different flows, models and grid/filter conventions.",
+    "Paper Fig. 2 compares NGMR, NGM4, similarity, dynamic mixed and dynamic Smagorinsky; only NGM4 matches a model here.",
+    "The existing fine-grid edge-padded Gaussian convention is retained for comparability; no coarse-grid spectral projection.",
+    "The paper axis is Delta/ell_i (Eq. 3.3); --scale-plan supplies a measured convection value, while a bare reference_length is user-provided.",
+    "A is the ratio of integrated moments, not the average of per-frame accuracy.",
+    "All archived moments, trapezoidal time weights and JSON metrics were checked for consistency.",
+    "Each panel set holds its requested predictor/correction budget fixed and varies physical Delta (or Delta/L with explicit L).",
+    "Only equal-budget trace/STF pairs are drawn; P denotes general predictors and N denotes frozen-baseline corrections.",
+    "All candidates, including mixed-budget pairs, are preserved in metrics.csv and source archives.",
+    "Candidates are refitted at each width; term support and the original fit crop may change.",
+    "Discovered residuals are not assumed to equal the prescribed Hessian correction.",
+    "General-discovery plots compare equal requested predictor counts (forced target excluded); tau uses the same budget for trace and STF.",
+    "General discovered closures are fitted directly to measured tau/phi, without a frozen gradient baseline.",
+    "These are discovery-data fits, not independent validation or thesis-selected models.",
+    "Prescribed phi is the analogous Gaussian scalar expansion; the reference paper studies stress.",
+    "Colors/layout match the next-cell paper-style analysis; markers identify evaluated widths.",
+    "Undefined ratios and missing candidates are gaps; no interpolation or best-model selection."
+  ],
+  "notices": [],
+  "definitions": {
+    "Pi_tau": "-sum_ij S_ij tau_ij",
+    "S_ij": "(d_i ubar_j+d_j ubar_i)/2",
+    "Pi_phi": "-sum_i phi_i d_i bbar",
+    "A": "integral <reference:modeled> dt / max(integral <reference:reference> dt, integral <modeled:modeled> dt)",
+    "A_source": "local SGS paper equations (3.8)-(3.9), pages 8-9; Figure 2",
+    "mean_flux_ratio": "time-integrated spatial mean modeled Pi / reference Pi",
+    "prescribed_tau_first": "(delta^2/12) (d_k u_i)(d_k u_j)",
+    "prescribed_tau_second": "tau_first + (delta^4/288) (d_k d_m u_i)(d_k d_m u_j)",
+    "prescribed_phi_first": "(delta^2/12) (d_k u_i)(d_k b)",
+    "prescribed_phi_second": "phi_first + (delta^4/288) (d_k d_m u_i)(d_k d_m b)",
+    "prescribed_source": "stress: paper (3.1)-(3.4); phi: analogous Gaussian expansion, not a claim from this stress-only paper",
+    "discovered_second": "frozen fitted/theoretical gradient plus discovered residual; not assumed to equal prescribed Hessian"
+  },
+  "correction_budgets": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "plotted_curves": [
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "closure_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (1 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9983822316060644,
+        0.972354339557081,
+        0.9204109242942031,
+        0.8991301270879923,
+        0.9169854959206815,
+        0.9465904680635564
+      ],
+      "candidate_ids": [
+        "7",
+        "7",
+        "7",
+        "7",
+        "7",
+        "7"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9986222518760378,
+        0.9932150971369899,
+        0.9668098242605354,
+        0.9419099002283021,
+        0.936927633157531,
+        0.9442788647643857
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9968613678271914,
+        0.9686364106623419,
+        0.9098125507187937,
+        0.8794247311692449,
+        0.8869047369209521,
+        0.906305009691357
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "flux_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (1 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.13459919574661502,
+        0.004405808004614969,
+        0.0011254622265315039,
+        0.00045477160415989326,
+        0.0001816459508275636,
+        7.744170434208652e-05
+      ],
+      "candidate_ids": [
+        "7",
+        "7",
+        "7",
+        "7",
+        "7",
+        "7"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9169512919260917,
+        0.8930413683417247,
+        0.7281900386985318,
+        0.5977079533864146,
+        0.49324700593972065,
+        0.49382138858255864
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.05975152368826516,
+        0.0005342713990917441,
+        0.00022373762807663606,
+        0.00012506645179987717,
+        4.013399516970141e-05,
+        5.474183889775937e-06
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "mean_flux_ratio",
+      "curve": "general_discovery",
+      "label": "Discovered (1 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.14528497788334466,
+        0.00878164053722404,
+        0.0017041551173853282,
+        0.0006586240331981717,
+        0.0003425257698346563,
+        0.00022547274863451828
+      ],
+      "candidate_ids": [
+        "7",
+        "7",
+        "7",
+        "7",
+        "7",
+        "7"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.8595318542139649,
+        0.8210222397113669,
+        0.6148608833230131,
+        0.4420668640539255,
+        0.3041664377984559,
+        0.14074531407504326
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.018397008232116124,
+        0.0007587908219200882,
+        6.268744581335901e-05,
+        5.915609539619749e-05,
+        7.042621108183171e-05,
+        0.00010047962209052522
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "closure_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (1 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9982709039022034,
+        0.9643656621829355,
+        0.8617673001123065,
+        0.7500305714118587,
+        0.6627470488266185,
+        0.6171919603518183
+      ],
+      "candidate_ids": [
+        "37",
+        "37",
+        "37",
+        "37",
+        "37",
+        "37"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9966447374534753,
+        0.9828322401221311,
+        0.912775351323292,
+        0.8169443160120388,
+        0.7295484858063691,
+        0.6899211727069409
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9934711771740645,
+        0.9390343708655359,
+        0.8051730114600303,
+        0.6816794840729229,
+        0.5988032890347391,
+        0.579437060190221
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "flux_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (1 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9989271246655412,
+        0.9831437180651204,
+        0.9599163677788585,
+        0.9659721074967618,
+        0.8628185904829061,
+        0.7930650751610464
+      ],
+      "candidate_ids": [
+        "37",
+        "37",
+        "37",
+        "37",
+        "37",
+        "37"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9970228192099732,
+        0.9955076235041361,
+        0.9835470464267259,
+        0.9396744054251879,
+        0.8763217134803851,
+        0.8427474284150741
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9965531607923188,
+        0.9900951636433665,
+        0.9643288827986365,
+        0.8781265948294597,
+        0.7796372270480926,
+        0.7445789461134591
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "mean_flux_ratio",
+      "curve": "general_discovery",
+      "label": "Discovered (1 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        1.0000794891127043,
+        1.003731517174386,
+        0.9932656336678435,
+        0.9190861342258568,
+        0.7992172820839886,
+        0.7139839914203927
+      ],
+      "candidate_ids": [
+        "37",
+        "37",
+        "37",
+        "37",
+        "37",
+        "37"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9977979516581217,
+        0.994800019913506,
+        0.9735964424780686,
+        0.921585923254141,
+        0.8453479731499847,
+        0.7878353028679155
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 1,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.996342679130584,
+        0.9780947928089841,
+        0.9284526333135831,
+        0.8355557286821681,
+        0.7222111816939064,
+        0.6703726332384603
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "closure_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (2 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9997860949871992,
+        0.9934281741393484,
+        0.963712758901264,
+        0.9455026494242631,
+        0.9527850636640979,
+        0.9614412559665283
+      ],
+      "candidate_ids": [
+        "14",
+        "14",
+        "14",
+        "14",
+        "14",
+        "14"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9986222518760378,
+        0.9932150971369899,
+        0.9668098242605354,
+        0.9419099002283021,
+        0.936927633157531,
+        0.9442788647643857
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9968613678271914,
+        0.9686364106623419,
+        0.9098125507187937,
+        0.8794247311692449,
+        0.8869047369209521,
+        0.906305009691357
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "flux_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (2 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.4642957972681508,
+        0.32426507034117413,
+        0.27946487346403354,
+        0.21405643452752424,
+        0.21330587967311002,
+        0.10712806973229844
+      ],
+      "candidate_ids": [
+        "14",
+        "14",
+        "14",
+        "14",
+        "14",
+        "14"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9169512919260917,
+        0.8930413683417247,
+        0.7281900386985318,
+        0.5977079533864146,
+        0.49324700593972065,
+        0.49382138858255864
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.05975152368826516,
+        0.0005342713990917441,
+        0.00022373762807663606,
+        0.00012506645179987717,
+        4.013399516970141e-05,
+        5.474183889775937e-06
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "mean_flux_ratio",
+      "curve": "general_discovery",
+      "label": "Discovered (2 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.904699664888368,
+        0.7837445060200359,
+        0.6888258711998334,
+        0.652859895371972,
+        0.6505120515083935,
+        0.08404410770320447
+      ],
+      "candidate_ids": [
+        "14",
+        "14",
+        "14",
+        "14",
+        "14",
+        "14"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.8595318542139649,
+        0.8210222397113669,
+        0.6148608833230131,
+        0.4420668640539255,
+        0.3041664377984559,
+        0.14074531407504326
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.018397008232116124,
+        0.0007587908219200882,
+        6.268744581335901e-05,
+        5.915609539619749e-05,
+        7.042621108183171e-05,
+        0.00010047962209052522
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "closure_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (2 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9983075693114724,
+        0.9651974584979234,
+        0.8664958799401737,
+        0.7629615688988488,
+        0.682069931372002,
+        0.6402677872928044
+      ],
+      "candidate_ids": [
+        "38",
+        "38",
+        "38",
+        "38",
+        "38",
+        "38"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9966447374534753,
+        0.9828322401221311,
+        0.912775351323292,
+        0.8169443160120388,
+        0.7295484858063691,
+        0.6899211727069409
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9934711771740645,
+        0.9390343708655359,
+        0.8051730114600303,
+        0.6816794840729229,
+        0.5988032890347391,
+        0.579437060190221
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "flux_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (2 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9988578369595963,
+        0.9822190848976236,
+        0.9565518366123674,
+        0.9676849879742778,
+        0.8839483230904457,
+        0.8149088680803261
+      ],
+      "candidate_ids": [
+        "38",
+        "38",
+        "38",
+        "38",
+        "38",
+        "38"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9970228192099732,
+        0.9955076235041361,
+        0.9835470464267259,
+        0.9396744054251879,
+        0.8763217134803851,
+        0.8427474284150741
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9965531607923188,
+        0.9900951636433665,
+        0.9643288827986365,
+        0.8781265948294597,
+        0.7796372270480926,
+        0.7445789461134591
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "mean_flux_ratio",
+      "curve": "general_discovery",
+      "label": "Discovered (2 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        1.0002045980371064,
+        1.0056758473864338,
+        1.0007314668259182,
+        0.9357527698358192,
+        0.8215379950765732,
+        0.7332158731954028
+      ],
+      "candidate_ids": [
+        "38",
+        "38",
+        "38",
+        "38",
+        "38",
+        "38"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9977979516581217,
+        0.994800019913506,
+        0.9735964424780686,
+        0.921585923254141,
+        0.8453479731499847,
+        0.7878353028679155
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 2,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.996342679130584,
+        0.9780947928089841,
+        0.9284526333135831,
+        0.8355557286821681,
+        0.7222111816939064,
+        0.6703726332384603
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "closure_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (3 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9998380069176135,
+        0.9929946508796235,
+        0.9638595860567691,
+        0.9471272005987965,
+        0.9551804810064396,
+        0.9729876299135817
+      ],
+      "candidate_ids": [
+        "21",
+        "21",
+        "21",
+        "21",
+        "21",
+        "21"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9986222518760378,
+        0.9932150971369899,
+        0.9668098242605354,
+        0.9419099002283021,
+        0.936927633157531,
+        0.9442788647643857
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9968613678271914,
+        0.9686364106623419,
+        0.9098125507187937,
+        0.8794247311692449,
+        0.8869047369209521,
+        0.906305009691357
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "flux_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (3 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.48595047672077135,
+        0.33579904933664145,
+        0.29894479101817745,
+        0.2317462651581598,
+        0.23407358525431174,
+        0.2392057664143911
+      ],
+      "candidate_ids": [
+        "21",
+        "21",
+        "21",
+        "21",
+        "21",
+        "21"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9169512919260917,
+        0.8930413683417247,
+        0.7281900386985318,
+        0.5977079533864146,
+        0.49324700593972065,
+        0.49382138858255864
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.05975152368826516,
+        0.0005342713990917441,
+        0.00022373762807663606,
+        0.00012506645179987717,
+        4.013399516970141e-05,
+        5.474183889775937e-06
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "mean_flux_ratio",
+      "curve": "general_discovery",
+      "label": "Discovered (3 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.8816211356046366,
+        0.7535910256457571,
+        0.6655256740588184,
+        0.6396070897401299,
+        0.6204991343652791,
+        0.6307085732621351
+      ],
+      "candidate_ids": [
+        "21",
+        "21",
+        "21",
+        "21",
+        "21",
+        "21"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.8595318542139649,
+        0.8210222397113669,
+        0.6148608833230131,
+        0.4420668640539255,
+        0.3041664377984559,
+        0.14074531407504326
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.018397008232116124,
+        0.0007587908219200882,
+        6.268744581335901e-05,
+        5.915609539619749e-05,
+        7.042621108183171e-05,
+        0.00010047962209052522
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "closure_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (3 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.998713819809204,
+        0.9743100293369609,
+        0.8975629845799568,
+        0.819829797089502,
+        0.6869988471765932,
+        0.6491448778043593
+      ],
+      "candidate_ids": [
+        "39",
+        "39",
+        "39",
+        "39",
+        "39",
+        "39"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9966447374534753,
+        0.9828322401221311,
+        0.912775351323292,
+        0.8169443160120388,
+        0.7295484858063691,
+        0.6899211727069409
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9934711771740645,
+        0.9390343708655359,
+        0.8051730114600303,
+        0.6816794840729229,
+        0.5988032890347391,
+        0.579437060190221
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "flux_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (3 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9991184335091692,
+        0.9848907177366097,
+        0.9586126513777207,
+        0.9439130876194877,
+        0.9102958752578232,
+        0.8473118344266845
+      ],
+      "candidate_ids": [
+        "39",
+        "39",
+        "39",
+        "39",
+        "39",
+        "39"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9970228192099732,
+        0.9955076235041361,
+        0.9835470464267259,
+        0.9396744054251879,
+        0.8763217134803851,
+        0.8427474284150741
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9965531607923188,
+        0.9900951636433665,
+        0.9643288827986365,
+        0.8781265948294597,
+        0.7796372270480926,
+        0.7445789461134591
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "mean_flux_ratio",
+      "curve": "general_discovery",
+      "label": "Discovered (3 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        1.0000984991266268,
+        1.0060101134485167,
+        1.0099947638047804,
+        0.9803537674316498,
+        0.8456085775611757,
+        0.7622062047286601
+      ],
+      "candidate_ids": [
+        "39",
+        "39",
+        "39",
+        "39",
+        "39",
+        "39"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9977979516581217,
+        0.994800019913506,
+        0.9735964424780686,
+        0.921585923254141,
+        0.8453479731499847,
+        0.7878353028679155
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 3,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.996342679130584,
+        0.9780947928089841,
+        0.9284526333135831,
+        0.8355557286821681,
+        0.7222111816939064,
+        0.6703726332384603
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "closure_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (4 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9998718866792362,
+        0.9925765483673828,
+        0.9630082658817831,
+        0.9453819288982254,
+        0.9523128855056542,
+        0.967584317884958
+      ],
+      "candidate_ids": [
+        "28",
+        "28",
+        "28",
+        "28",
+        "28",
+        "28"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9986222518760378,
+        0.9932150971369899,
+        0.9668098242605354,
+        0.9419099002283021,
+        0.936927633157531,
+        0.9442788647643857
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9968613678271914,
+        0.9686364106623419,
+        0.9098125507187937,
+        0.8794247311692449,
+        0.8869047369209521,
+        0.906305009691357
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "flux_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (4 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.4956045676526595,
+        0.3282340435188047,
+        0.2920772592187904,
+        0.23525894445842818,
+        0.2494212255915915,
+        0.2723468543295443
+      ],
+      "candidate_ids": [
+        "28",
+        "28",
+        "28",
+        "28",
+        "28",
+        "28"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9169512919260917,
+        0.8930413683417247,
+        0.7281900386985318,
+        0.5977079533864146,
+        0.49324700593972065,
+        0.49382138858255864
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.05975152368826516,
+        0.0005342713990917441,
+        0.00022373762807663606,
+        0.00012506645179987717,
+        4.013399516970141e-05,
+        5.474183889775937e-06
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "mean_flux_ratio",
+      "curve": "general_discovery",
+      "label": "Discovered (4 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.8647794710965652,
+        0.728878450139508,
+        0.6321465690131438,
+        0.5881853234439953,
+        0.5890667531955297,
+        0.5932459463091366
+      ],
+      "candidate_ids": [
+        "28",
+        "28",
+        "28",
+        "28",
+        "28",
+        "28"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.8595318542139649,
+        0.8210222397113669,
+        0.6148608833230131,
+        0.4420668640539255,
+        0.3041664377984559,
+        0.14074531407504326
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.018397008232116124,
+        0.0007587908219200882,
+        6.268744581335901e-05,
+        5.915609539619749e-05,
+        7.042621108183171e-05,
+        0.00010047962209052522
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "closure_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (4 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9988185201271046,
+        0.9758062488117879,
+        0.8999482122625134,
+        0.8202007098261959,
+        0.6887645930949612,
+        0.6451530826297003
+      ],
+      "candidate_ids": [
+        "40",
+        "40",
+        "40",
+        "40",
+        "40",
+        "40"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9966447374534753,
+        0.9828322401221311,
+        0.912775351323292,
+        0.8169443160120388,
+        0.7295484858063691,
+        0.6899211727069409
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9934711771740645,
+        0.9390343708655359,
+        0.8051730114600303,
+        0.6816794840729229,
+        0.5988032890347391,
+        0.579437060190221
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "flux_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (4 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9985693787065836,
+        0.9764394515441478,
+        0.9433131540449701,
+        0.9442629796066222,
+        0.8912012295643601,
+        0.779209746371611
+      ],
+      "candidate_ids": [
+        "40",
+        "40",
+        "40",
+        "40",
+        "40",
+        "40"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9970228192099732,
+        0.9955076235041361,
+        0.9835470464267259,
+        0.9396744054251879,
+        0.8763217134803851,
+        0.8427474284150741
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9965531607923188,
+        0.9900951636433665,
+        0.9643288827986365,
+        0.8781265948294597,
+        0.7796372270480926,
+        0.7445789461134591
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "mean_flux_ratio",
+      "curve": "general_discovery",
+      "label": "Discovered (4 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        1.000649542605282,
+        1.0146989256865049,
+        1.0262469514775925,
+        0.9813764782247838,
+        0.8572480626929837,
+        0.7008891430799219
+      ],
+      "candidate_ids": [
+        "40",
+        "40",
+        "40",
+        "40",
+        "40",
+        "40"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9977979516581217,
+        0.994800019913506,
+        0.9735964424780686,
+        0.921585923254141,
+        0.8453479731499847,
+        0.7878353028679155
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 4,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.996342679130584,
+        0.9780947928089841,
+        0.9284526333135831,
+        0.8355557286821681,
+        0.7222111816939064,
+        0.6703726332384603
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "closure_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (5 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9998609287830501,
+        0.9927190591538898,
+        0.9633136225556997,
+        0.94651252028799,
+        0.9525342387099869,
+        0.967563514653792
+      ],
+      "candidate_ids": [
+        "35",
+        "35",
+        "35",
+        "35",
+        "35",
+        "35"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9986222518760378,
+        0.9932150971369899,
+        0.9668098242605354,
+        0.9419099002283021,
+        0.936927633157531,
+        0.9442788647643857
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9968613678271914,
+        0.9686364106623419,
+        0.9098125507187937,
+        0.8794247311692449,
+        0.8869047369209521,
+        0.906305009691357
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "flux_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (5 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.4932893645802226,
+        0.33049454514924886,
+        0.2946539864442228,
+        0.23445157911897518,
+        0.24899744133623272,
+        0.27171798576043116
+      ],
+      "candidate_ids": [
+        "35",
+        "35",
+        "35",
+        "35",
+        "35",
+        "35"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9169512919260917,
+        0.8930413683417247,
+        0.7281900386985318,
+        0.5977079533864146,
+        0.49324700593972065,
+        0.49382138858255864
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.05975152368826516,
+        0.0005342713990917441,
+        0.00022373762807663606,
+        0.00012506645179987717,
+        4.013399516970141e-05,
+        5.474183889775937e-06
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "mean_flux_ratio",
+      "curve": "general_discovery",
+      "label": "Discovered (5 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.8666283731187181,
+        0.7327386402370357,
+        0.6373092019920583,
+        0.5859620369486988,
+        0.5877862370145108,
+        0.5949514558781925
+      ],
+      "candidate_ids": [
+        "35",
+        "35",
+        "35",
+        "35",
+        "35",
+        "35"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.8595318542139649,
+        0.8210222397113669,
+        0.6148608833230131,
+        0.4420668640539255,
+        0.3041664377984559,
+        0.14074531407504326
+      ],
+      "candidate_ids": [
+        "43",
+        "43",
+        "43",
+        "43",
+        "43",
+        "43"
+      ]
+    },
+    {
+      "target": "tau",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.018397008232116124,
+        0.0007587908219200882,
+        6.268744581335901e-05,
+        5.915609539619749e-05,
+        7.042621108183171e-05,
+        0.00010047962209052522
+      ],
+      "candidate_ids": [
+        "42",
+        "42",
+        "42",
+        "42",
+        "42",
+        "42"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "closure_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (5 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9988200180217077,
+        0.975867850472473,
+        0.9007126980319077,
+        0.8229565025082852,
+        0.6924301459506199,
+        0.6492483288406736
+      ],
+      "candidate_ids": [
+        "41",
+        "41",
+        "41",
+        "41",
+        "41",
+        "41"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9966447374534753,
+        0.9828322401221311,
+        0.912775351323292,
+        0.8169443160120388,
+        0.7295484858063691,
+        0.6899211727069409
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "closure_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9934711771740645,
+        0.9390343708655359,
+        0.8051730114600303,
+        0.6816794840729229,
+        0.5988032890347391,
+        0.579437060190221
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "flux_accuracy_A",
+      "curve": "general_discovery",
+      "label": "Discovered (5 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9985583143400557,
+        0.9763120037585113,
+        0.9429385720254144,
+        0.9417200233440787,
+        0.9127226381015372,
+        0.7833426701279524
+      ],
+      "candidate_ids": [
+        "41",
+        "41",
+        "41",
+        "41",
+        "41",
+        "41"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9970228192099732,
+        0.9955076235041361,
+        0.9835470464267259,
+        0.9396744054251879,
+        0.8763217134803851,
+        0.8427474284150741
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "flux_accuracy_A",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9965531607923188,
+        0.9900951636433665,
+        0.9643288827986365,
+        0.8781265948294597,
+        0.7796372270480926,
+        0.7445789461134591
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "mean_flux_ratio",
+      "curve": "general_discovery",
+      "label": "Discovered (5 predictors)",
+      "color": "#0072BD",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        1.0006719625013787,
+        1.0150271332500267,
+        1.027622050058883,
+        0.9855988338140395,
+        0.8746383986850772,
+        0.7190144962259353
+      ],
+      "candidate_ids": [
+        "41",
+        "41",
+        "41",
+        "41",
+        "41",
+        "41"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_second",
+      "label": "Prescribed gradient + Hessian",
+      "color": "#D95319",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.9977979516581217,
+        0.994800019913506,
+        0.9735964424780686,
+        0.921585923254141,
+        0.8453479731499847,
+        0.7878353028679155
+      ],
+      "candidate_ids": [
+        "45",
+        "45",
+        "45",
+        "45",
+        "45",
+        "45"
+      ]
+    },
+    {
+      "target": "phi",
+      "correction_budget": null,
+      "predictor_budget": 5,
+      "metric": "mean_flux_ratio",
+      "curve": "prescribed_first",
+      "label": "Prescribed gradient",
+      "color": "#77AC30",
+      "linestyle": "-",
+      "x": [
+        0.049999999999999996,
+        0.19999999999999998,
+        0.39999999999999997,
+        0.6000000000000001,
+        0.7999999999999999,
+        1.0
+      ],
+      "y": [
+        0.996342679130584,
+        0.9780947928089841,
+        0.9284526333135831,
+        0.8355557286821681,
+        0.7222111816939064,
+        0.6703726332384603
+      ],
+      "candidate_ids": [
+        "44",
+        "44",
+        "44",
+        "44",
+        "44",
+        "44"
+      ]
+    }
+  ],
+  "plot_settings": {
+    "rc": {
+      "font.family": "serif",
+      "font.serif": [
+        "STIXGeneral",
+        "DejaVu Serif"
+      ],
+      "mathtext.fontset": "stix",
+      "text.usetex": false,
+      "font.size": 13,
+      "axes.linewidth": 0.75,
+      "axes.labelsize": 18,
+      "xtick.labelsize": 13,
+      "ytick.labelsize": 13,
+      "lines.linewidth": 1.15,
+      "savefig.facecolor": "white",
+      "figure.facecolor": "white",
+      "pdf.fonttype": 42,
+      "ps.fonttype": 42
+    },
+    "figure_inches": [
+      4.8,
+      9.5
+    ],
+    "markers": true
+  },
+  "executed_cell_sha256": "a5a440ed7ba96218ca677d82869da12362da45b7fec4cb9c83a4062c4b6db842"
+}
