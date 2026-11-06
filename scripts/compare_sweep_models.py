@@ -52,7 +52,7 @@ def main():
         raise ValueError("Invalid archived filter width")
 
     labels = [f"Discovered P{p}" for p in budgets] + [
-        "Prescribed gradient (NGM2)", "Prescribed gradient + Hessian (NGM4)"]
+        "Nonlinear/gradient/Clark model", "NGM4"]
     selected = {}
     with csv_path.open(newline="", encoding="utf-8") as stream:
         for row in csv.DictReader(stream):
@@ -100,19 +100,27 @@ def main():
                     x, y, label=label, color=colors[index],
                     linestyle="-" if index < len(budgets) else ("--" if index == len(budgets) else "-."),
                     marker="o", markersize=4)
-        axes[0, col].set_title("Stress / energy flux" if target == "tau" else "Scalar flux / scalar-variance transfer")
-        for row_index, ylabel in enumerate(("Closure accuracy A", "Local-flux accuracy A", "Mean modeled / reference flux")):
+        axes[0, col].set_title("SGS stress tensor" if target == "tau" else "SGS scalar flux (convection extension)")
+        symbol = r"\tau" if target == "tau" else r"\phi"
+        flux = r"\Pi" if target == "tau" else r"\Pi_{\phi}"
+        ylabels = (
+            rf"$\mathcal{{A}}({symbol})$",
+            rf"$\mathcal{{A}}({flux})$",
+            rf"$\langle {flux}^{{\mathrm{{LES}}}}\rangle/\langle {flux}^{{\mathrm{{DNS}}}}\rangle$",
+        )
+        for row_index, ylabel in enumerate(ylabels):
             ax = axes[row_index, col]
             ax.axhline(1, color="0.65", linewidth=.8, linestyle=":")
             ax.set_ylabel(ylabel)
             ax.grid(alpha=.2)
-        axes[2, col].set_xlabel(r"$\Delta/\ell_i$" if analysis.get("scale_plan") and length else
+        axes[2, col].set_xlabel(r"$\delta$" if analysis.get("scale_plan") and length else
                                 (r"$\Delta/L$" if length else r"$\Delta$"))
         axes[2, col].set_xticks(x)
     handles, legend_labels = axes[0, 0].get_legend_handles_labels()
     fig.legend(handles, legend_labels, loc="upper center", ncol=3, frameon=False)
-    fig.text(.5, .015, "Same DNS-derived reference at each width; ideal = 1. Discovery-data fits. "
-             "P counts predictors per trace/STF fit for stress.", ha="center", fontsize=9)
+    fig.text(.5, .015, r"A priori benchmarks on convection data. $\delta=\Delta/\ell_i$."
+             if analysis.get("scale_plan") and length else
+             "A priori benchmarks on convection data.", ha="center", fontsize=10)
     fig.tight_layout(rect=(0, .04, 1, .91))
     for extension in ("png", "pdf"):
         fig.savefig(output / f"models_vs_dns.{extension}", dpi=200)
@@ -133,7 +141,13 @@ def main():
                     vb = number(selected[target, b, width][metric])
                     writer.writerow([target, width, a, b, metric, va, vb, va-vb])
     notes = (
-        "All models are compared against the same archived DNS-derived reference at each width.\n"
+        "A priori benchmarks: all models are compared with quantities computed from filtered DNS data.\n"
+        "Stress panels: accuracy of the SGS stress tensor A(tau), local energy flux A(Pi),\n"
+        "and mean energy flux normalized by the DNS value <Pi^LES>/<Pi^DNS>.\n"
+        "delta = Delta/ell_i when the measured scale plan is supplied.\n"
+        "The scalar-flux column extends this notation to convection; it is not a paper benchmark.\n"
+        "The gradient/Clark and NGM4 legend entries denote analogous scalar expansions in that column.\n"
+        "Discovered P1-P3 retain their archive identities; none is relabeled as NGMR.\n"
         "Accuracy A: higher is better (ideal 1). Mean flux ratio: closer to 1 is better, not larger.\n"
         "Pairwise CSV contains differences of reference-based scores, NOT pairwise field errors.\n"
         "The saved scores do not supply cross-moments between arbitrary models.\n"

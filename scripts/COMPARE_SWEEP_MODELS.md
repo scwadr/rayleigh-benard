@@ -11,8 +11,9 @@ The input directory is the downloaded `rundata` equivalent: it must contain
 import, original DNS arrays, filtering, or regression is needed. This standalone
 archive reader also works on the feature branch without importing main's workflow.
 
-The default compares discovered P1, P2, P3, prescribed gradient (NGM2), and
-prescribed gradient plus Hessian (NGM4). P4/P5 are excluded. Override with
+The default compares discovered P1, P2, P3, the nonlinear/gradient/Clark model,
+and NGM4. The last two are the prescribed gradient and gradient-plus-Hessian
+models, respectively. P4/P5 are excluded. Override with
 `--budgets 1 2` if desired. P denotes requested predictors, excluding the target;
 stress uses that budget separately for trace and symmetric trace-free fits.
 Unequal-budget stress pairs and zero-predictor candidates are excluded.
@@ -20,7 +21,11 @@ Unequal-budget stress pairs and zero-predictor candidates are excluded.
 A unique `model_comparison_<timestamp>_<id>/` directory contains:
 
 - `models_vs_dns.png` and `.pdf`: one figure, with stress on the left and scalar
-  flux on the right; rows show closure accuracy, local-flux accuracy, mean-flux ratio.
+  flux on the right. Stress axes use the paper's notation: `A(tau)`, `A(Pi)`,
+  and `<Pi^LES>/<Pi^DNS>`. The horizontal axis is `delta = Delta/ell_i` when a
+  measured scale plan is present. The caption uses "A priori benchmarks".
+  Scalar axes use `phi` and `Pi_phi` and are explicitly labeled a convection
+  extension; the model names in that column denote analogous scalar expansions.
 - `selected_models.csv`: the plotted rows with candidate IDs and source paths.
 - `pairwise_score_differences.csv`: scores A and B and their difference for each
   pair of models at each width. Higher accuracy is better; mean-flux ratio should
