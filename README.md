@@ -330,8 +330,8 @@ On a PACE compute node in the analysis environment, use the same completed
 `scale_plan.json` as the figure comparison:
 
 ```bash
-python scripts/plot_filtered_snapshot.py --scale-plan "$PLAN" \
-  --time-index 50 --field buoyancy --output-root "$RB_DATA/field-plots"
+python scripts/plot_filtered_snapshot.py --scale-plan "${PLAN:?Set PLAN to the completed scale_plan.json}" \
+  --time-index 50 --field buoyancy --output-root "${RB_DATA:?Set RB_DATA to your scratch run directory}/field-plots"
 ```
 
 This saves one PNG per planned width and an unfiltered PNG, all with the same

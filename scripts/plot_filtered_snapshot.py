@@ -36,7 +36,8 @@ def notebook_filter(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--scale-plan", type=Path, required=True)
+    parser.add_argument("--scale-plan", required=True,
+                        help="Path to the completed measurement's scale_plan.json")
     parser.add_argument("--time-index", type=int, required=True,
                         help="Absolute zero-based index in the preprocessed NPZ")
     parser.add_argument("--field", choices=FIELDS, default="buoyancy")
@@ -46,6 +47,11 @@ def main():
     parser.add_argument("--clim", type=float, nargs=2, metavar=("MIN", "MAX"))
     parser.add_argument("--dpi", type=int, default=200)
     args = parser.parse_args()
+    if not args.scale_plan.strip():
+        parser.error("--scale-plan is empty; set PLAN to the completed measurement's scale_plan.json")
+    plan_path = Path(args.scale_plan).expanduser().resolve()
+    if not plan_path.is_file():
+        parser.error(f"--scale-plan must name an existing JSON file, not a directory: {plan_path}")
 
     import jax
     import jax.numpy as jnp
@@ -55,7 +61,6 @@ def main():
     import numpy as np
 
     jax.config.update("jax_enable_x64", True)  # Same precision as Copy2.
-    plan_path = args.scale_plan.expanduser().resolve()
     plan_bytes = plan_path.read_bytes()
     plan = json.loads(plan_bytes)
     measurement = json.loads((plan_path.parent / "measurement.json").read_bytes())
