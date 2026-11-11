@@ -324,6 +324,35 @@ bash slurm/submit_filter_workflow.sh plot \
 Add `--verify-only` for archive checks without plotting. The full directory map,
 failure handling, and commands are in [PACE_TWO_RUNS.md](PACE_TWO_RUNS.md).
 
+### Field snapshots at the figure-analysis filter widths
+
+On a PACE compute node in the analysis environment, use the same completed
+`scale_plan.json` as the figure comparison:
+
+```bash
+python scripts/plot_filtered_snapshot.py --scale-plan "$PLAN" \
+  --time-index 50 --field buoyancy --output-root "$RB_DATA/field-plots"
+```
+
+This saves one PNG per planned width and an unfiltered PNG, all with the same
+color limits, in a unique output directory. `--time-index` is the absolute,
+zero-based index in the preprocessed NPZ and must lie inside the plan's time
+window. The input path, widths, and alpha come from the plan; support-limited
+widths are preserved. Unfiltered means the interpolated Copy2 input, before
+Gaussian filtering, rather than the original Dedalus grid.
+
+Choose `--field buoyancy`, `pressure`, `vorticity`, `u` (horizontal velocity), or
+`v` (vertical velocity). Velocity keys follow Copy2's component swap. Optional
+`--clim MIN MAX`, `--cmap RdBu_r`, and `--dpi 200` control rendering. The default
+color range comes from the unfiltered frame. The script loads the filter
+function definitions directly from Copy2, including its existing edge padding
+and trimming/fallback behavior; it performs no regression. It extracts just the
+chosen NPZ field to temporary scratch storage before memory-mapping one frame,
+so allow disk space for that field's full uncompressed trajectory. Temporary
+data are removed afterward. Outputs include the plan, filter source, plotting
+script, and a metadata manifest; `COMPLETE` is written only after success.
+Rendering and numerical agreement still require validation on PACE.
+
 ### Reuse after consolidation
 
 `--reuse-runs` remains available for completed fits with the **same pinned
